@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}View Certificate{% endblock %}
+{% block content %}
+<div class="m-3">
+    <div class="alert alert-success">
+        Data found successfully!
+    </div>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <td colspan="2" class="fw-bold">Certificate Information</td>
+            </tr>
+            <tr>
+                <td>ID</td>
+                <td>{{ certificate.id }}</td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>{{ certificate.name }}</td>
+            </tr>
+            <tr>
+                <td>Title</td>
+                <td>{{ certificate.title }}</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="fw-bold">Certifier Information</td>
+            </tr>
+            <tr>
+                <td>ID</td>
+                <td>{{ certifier.id }}</td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>{{ certifier.name }}</td>
+            </tr>
+            {% if certificate.url %}
+            <tr>
+                <td>Website</td>
+                <td>{{ certificate.url }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

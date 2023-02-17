@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Error{% endblock %}
+{% block content %}
+<div class="m-3">
+    <div class="alert alert-{{ 'danger' if critical_error else 'warning' }}">
+        <h2 class="alert-heading">{{ "Critical Error" if critical_error else "Error"}}</h2>
+        {{ message }}
+        {% if critical_error %}
+        <hr>
+        <p class="my-0">
+            Please contact this error to Gary Strivin' immediately via
+            <a href="mailto:garystriving@gmail.com">garystriving@gmail.com</a>
+            to troubleshoot your problem.
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
