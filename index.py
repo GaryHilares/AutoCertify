@@ -1,6 +1,6 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 from bson.objectid import ObjectId
-from utils import get_database, check_metadata
+from utils import get_database, check_metadata, get_qrcode_in_base64
 from flask_bcrypt import Bcrypt
 import re
 from dotenv import load_dotenv
@@ -22,7 +22,7 @@ def register():
         return render_template('error.html', message="Name or password are missing."), 400
     
     # Check that password is not too long
-    PATTERN = "^[A-Za-z\-\_\@\!\?\.]{4,50}$"
+    PATTERN = "^[A-Za-z0-9\-\_\@\!\?\.]{4,50}$"
     if not re.search(PATTERN, name) or not re.search(PATTERN, password):
         return render_template('error.html', message="Name and password must consist of 4-50 characters, including only letters, numbers, and standard punctuation.")
 
@@ -137,7 +137,37 @@ def view_certificate():
         "id": certifier["_id"],
         "name": certifier["name"],
         "url": certifier["url"]
-    })
+    }, download_url=f'{request.host_url}/download-certificate?id={certificate["_id"]}')
+
+@app.route('/download-certificate', methods=['GET'])
+def download_certificate():
+    # Retrieve and check GET input
+    id = request.args.get("id", None)
+    if not id:
+        return render_template('error.html', message="ID is missing in your request."), 403
+    
+    # Check that the ID is in correct format
+    try:
+        id = ObjectId(id)
+    except:
+        return render_template('error.html', message="The ID's format is invalid."), 403
+    
+    # Check that the ID exists and retrieve certificate
+    database = get_database()
+    certificate = database["certificate-list"].find_one({"_id": id})
+    if not certificate:
+        return render_template('error.html', message="ID was not found."), 403
+    
+    # Check that certifier is valid and retrieve its information
+    certifier = database["certifiers"].find_one({"_id": certificate["certifier_id"]})
+    if not certifier:
+        return render_template('error.html', critical_error=True, message="Certificate data is corrupt."), 500
+    
+    # Generate QR code
+    data_uri = get_qrcode_in_base64(f"{request.host_url}view-certificate?id={str(id)}", certificate, certifier)
+
+    # Redirect to image
+    return f"<img src=\"{data_uri}\">"
 
 if __name__ == '__main__':
     app.run(debug=True)
