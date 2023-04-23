@@ -1,11 +1,15 @@
-from pymongo import MongoClient
-import requests
 from bs4 import BeautifulSoup
-from os import environ
-from io import BytesIO
-from base64 import b64encode
+from PIL import Image
+from pymongo import MongoClient
 from qrcode import QRCode
-from PIL import Image, ImageFont, ImageDraw
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.pagesizes import A4, landscape
+import requests
+from io import BytesIO
+from os import environ
 
 def get_database():
     # Connect to the MongoDB cluster
@@ -29,15 +33,15 @@ def check_metadata(url, name, content):
     # Metadata information did not match, so return false
     return False
 
-def get_qrcode_in_base64(url, certificate_data, certifier_data):
-    font_settings = {"path": "static/Poppins-Bold.ttf", "size": 48}
-    qrcode_settings = {"left": 900, "top": 550, "width": 200, "height": 200}
-    name_settings = {"left": 643, "top": 380, "text": certificate_data["name"]}
-    title_settings = {"left": 643, "top": 485, "text": certificate_data["title"]}
-    certifier_settings = {"left": 643, "top": 685, "text": certifier_data["name"]}
+def get_certificate_pdf(certificate_data, certifier_data, url):
+    font_settings = {"path": "static/Poppins-Bold.ttf", "size": 32}
+    qrcode_settings = {"left": 600, "bottom": 100, "width": 125, "height": 125}
+    name_settings = {"left": 390, "bottom": 310, "text": certificate_data["name"]}
+    title_settings = {"left": 322, "bottom": 245, "text": certificate_data["title"]}
+    certifier_settings = {"left": 377, "bottom": 115, "text": certifier_data["name"]}
 
-    # Create bytes buffer
-    buffer = BytesIO()
+    # Set page dimensions
+    page_dimensions = landscape(A4)
 
     # Set QR generator information
     qrcode_generator = QRCode(
@@ -62,33 +66,21 @@ def get_qrcode_in_base64(url, certificate_data, certifier_data):
 
     # Open certificate template
     certificate_template = Image.open("static/template.png", 'r')
+    certificate_template.resize((int(page_dimensions[0]), int(page_dimensions[1])),Image.LANCZOS)
 
     # Load font
-    font = ImageFont.truetype(font_settings["path"], font_settings["size"])
+    pdfmetrics.registerFont(TTFont('Certificate Font', font_settings["path"]))
 
-    # Create drawing tool object
-    drawing_tool = ImageDraw.Draw(certificate_template)
+    # Draw elements
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=page_dimensions)
+    c.setFont('Certificate Font', font_settings["size"])
+    c.drawImage(ImageReader(certificate_template), 0, 0, page_dimensions[0], page_dimensions[1])
+    c.drawString(name_settings["left"], name_settings["bottom"], name_settings["text"])
+    c.drawString(title_settings["left"], title_settings["bottom"], title_settings["text"])
+    c.drawString(certifier_settings["left"], certifier_settings["bottom"], certifier_settings["text"])
+    c.drawImage(ImageReader(qrcode), qrcode_settings["left"], qrcode_settings["bottom"], qrcode_settings["width"], qrcode_settings["height"])
+    c.save()
 
-    # Write the name of the certified person
-    _, _, name_width, _ = drawing_tool.textbbox((0, 0), name_settings["text"], font)
-    drawing_tool.text((name_settings["left"] - name_width//2, name_settings["top"]), name_settings["text"], (0, 0, 0), font)
-
-    # Write the name of the title
-    _, _, title_width, _ = drawing_tool.textbbox((0, 0), title_settings["text"], font)
-    drawing_tool.text((title_settings["left"] - title_width//2, title_settings["top"]), title_settings["text"], (0, 0, 0), font)
-
-    # Write the name of the certifier
-    _, _, certifier_width, _ = drawing_tool.textbbox((0, 0), certifier_settings["text"], font)
-    drawing_tool.text((certifier_settings["left"] - certifier_width//2, certifier_settings["top"]), certifier_settings["text"], (0, 0, 0), font)
-
-    # Paste QR code in certificate
-    certificate_template.paste(qrcode, (qrcode_settings["left"], qrcode_settings["top"]))
-
-    # Write certificate to bytes buffer
-    certificate_template.save(buffer, "png")
-
-    # Encode buffer in a base64 string
-    b64_img = b64encode(buffer.getvalue()).decode()
-
-    # Convert b64 string to data URI
-    return "data:image/png;base64,{}".format(b64_img)
+    buffer.seek(0)
+    return buffer

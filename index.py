@@ -1,6 +1,6 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, send_file
 from bson.objectid import ObjectId
-from utils import get_database, check_metadata, get_qrcode_in_base64
+from utils import get_database, check_metadata, get_certificate_pdf
 from flask_bcrypt import Bcrypt
 import re
 from dotenv import load_dotenv
@@ -164,10 +164,11 @@ def download_certificate():
         return render_template('error.html', critical_error=True, message="Certificate data is corrupt."), 500
     
     # Generate QR code
-    data_uri = get_qrcode_in_base64(f"{request.host_url}view-certificate?id={str(id)}", certificate, certifier)
+    certificate_pdf = get_certificate_pdf(certificate, certifier, f"{request.host_url}view-certificate?id={str(id)}")
 
-    # Redirect to image
-    return f"<img src=\"{data_uri}\">"
+    # # Redirect to image
+    # return f"<img src=\"{data_uri}\">"
+    return send_file(certificate_pdf, mimetype="application/pdf", as_attachment=True, download_name="Certificate.pdf")
 
 if __name__ == '__main__':
     app.run(debug=True)
