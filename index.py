@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, render_template, send_file
 from flask_bcrypt import Bcrypt
 import requests
-from utils import get_database, check_metadata, get_certificate_pdf
+from utils import get_database, check_metadata
+from certificate_builder import get_certificate_pdf
 
 # Initialize app and config
 load_dotenv()
