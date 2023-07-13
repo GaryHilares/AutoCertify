@@ -17,25 +17,12 @@ import requests
 from utils import same_structure
 
 
-def get_certificate_pdf(
-    certificate_data: dict, certifier_data: dict, settings: dict, url: str
-) -> BytesIO:
+class CertificateBuilder:
     """
-    Creates a PDF certificate with the information passed.
+    Provides functionality for building certificates. Each method except `save`
+    returns `self` to allow for method chaining.
+    """
 
-    Arguments:
-        certificate_data (dict)
-            Information about the certificate, including the name and title.
-        certifier_data (dict)
-            Information about the certifier, including its name.
-        settings (dict)
-            Information about the layout of the generated certificate PDF.
-        url (str)
-            URL to create the certificate's QR.
-    Returns:
-        Bytes of the generated PDF.
-    """
-    # Load default settings and use them if settings are incomplete
     default_settings = {
         "template": "static/template.png",
         "font": {"name": "Poppins Bold", "size": 32},
@@ -44,80 +31,136 @@ def get_certificate_pdf(
         "title": {"left": 322, "bottom": 245},
         "certifier": {"left": 377, "bottom": 115},
     }
-    if not same_structure(settings, default_settings):
-        settings = default_settings
 
-    # Parse settings
-    font_settings = settings["font"]
-    qrcode_settings = settings["qrcode"]
-    name_settings = {**settings["name"], "text": certificate_data["name"]}
-    title_settings = {**settings["title"], "text": certificate_data["title"]}
-    certifier_settings = {**settings["certifier"], "text": certifier_data["name"]}
+    def __init__(self, settings: dict):
+        """
+        Creates a new CertificateBuilder with the provided settings.
 
-    # Set page dimensions
-    page_dimensions = landscape(A4)
+        Arguments:
+            settings (dict)
+                Information about the layout of the generated certificate PDF.
+        Returns:
+            self (CertificateBuilder)
+                A newly created `CertificateBuilder` instance.
+        """
+        self.settings = (
+            settings
+            if same_structure(settings, CertificateBuilder.default_settings)
+            else CertificateBuilder.default_settings
+        )
+        self.buffer = BytesIO()
+        self.pdf_drawer = canvas.Canvas(self.buffer, pagesize=landscape(A4))
 
-    # Generate QR code and resize it
-    qrcode_generator = QRCode(
-        version=4,
-        border=4,
-    )
-    qrcode_generator.add_data(url)
-    qrcode_generator.make(fit=True)
-    qrcode = qrcode_generator.make_image(
-        fill_color="black",
-        back_color="white",
-    )
-    qrcode = qrcode.resize(
-        (qrcode_settings["width"], qrcode_settings["height"]), Image.LANCZOS
-    )
+    def draw_template(self):
+        """
+        Adds the template to the certificate. Assumes its information was provided
+        through the settings when the object was created.
 
-    # Open certificate template
-    certificate_template = (
-        Image.open(BytesIO(requests.get(settings["template"], timeout=3).content))
-        if settings["template"].startswith("http")
-        else Image.open(settings["template"], "r")
-    )
-    certificate_template.resize(
-        (int(page_dimensions[0]), int(page_dimensions[1])), Image.LANCZOS
-    )
+        Returns:
+            self (CertificateBuilder)
+                Returns itself for method chaining.
+        """
+        page_dimensions = landscape(A4)
+        template_settings = self.settings["template"]
+        certificate_template = (
+            Image.open(BytesIO(requests.get(template_settings, timeout=3).content))
+            if template_settings.startswith("http")
+            else Image.open(template_settings, "r")
+        )
+        certificate_template.resize(
+            (int(page_dimensions[0]), int(page_dimensions[1])), Image.LANCZOS
+        )
+        self.pdf_drawer.drawImage(
+            ImageReader(certificate_template),
+            0,
+            0,
+            page_dimensions[0],
+            page_dimensions[1],
+        )
+        return self
 
-    # Load font
-    available_fonts = {"Poppins Bold": "static/Poppins-Bold.ttf"}
-    font_path = (
-        available_fonts[font_settings["name"]]
-        if font_settings["name"] in available_fonts
-        else available_fonts["Poppins Bold"]
-    )
-    pdfmetrics.registerFont(TTFont("Certificate Font", font_path))
+    def add_certificate_data(self, certificate_data: dict, certifier_data: dict):
+        """
+        Arguments:
+            certificate_data (dict)
+                Information about the certificate, including the name and title.
+            certifier_data (dict)
+                Information about the certifier, including its name.
+        Returns:
+            self (CertificateBuilder)
+                Returns itself for method chaining.
+        """
+        font_settings = self.settings["font"]
+        name_settings = {**self.settings["name"], "text": certificate_data["name"]}
+        title_settings = {**self.settings["title"], "text": certificate_data["title"]}
+        certifier_settings = {
+            **self.settings["certifier"],
+            "text": certifier_data["name"],
+        }
 
-    # Draw elements
-    buffer = BytesIO()
-    pdf_drawer = canvas.Canvas(buffer, pagesize=page_dimensions)
-    pdf_drawer.setFont("Certificate Font", font_settings["size"])
-    pdf_drawer.drawImage(
-        ImageReader(certificate_template), 0, 0, page_dimensions[0], page_dimensions[1]
-    )
-    pdf_drawer.drawString(
-        name_settings["left"], name_settings["bottom"], name_settings["text"]
-    )
-    pdf_drawer.drawString(
-        title_settings["left"], title_settings["bottom"], title_settings["text"]
-    )
-    pdf_drawer.drawString(
-        certifier_settings["left"],
-        certifier_settings["bottom"],
-        certifier_settings["text"],
-    )
-    pdf_drawer.drawImage(
-        ImageReader(qrcode),
-        qrcode_settings["left"],
-        qrcode_settings["bottom"],
-        qrcode_settings["width"],
-        qrcode_settings["height"],
-    )
-    pdf_drawer.save()
+        # Load font
+        available_fonts = {"Poppins Bold": "static/Poppins-Bold.ttf"}
+        font_path = (
+            available_fonts[font_settings["name"]]
+            if font_settings["name"] in available_fonts
+            else available_fonts["Poppins Bold"]
+        )
+        pdfmetrics.registerFont(TTFont("Certificate Font", font_path))
+        self.pdf_drawer.setFont("Certificate Font", font_settings["size"])
 
-    # Return buffer
-    buffer.seek(0)
-    return buffer
+        self.pdf_drawer.drawString(
+            name_settings["left"], name_settings["bottom"], name_settings["text"]
+        )
+        self.pdf_drawer.drawString(
+            title_settings["left"], title_settings["bottom"], title_settings["text"]
+        )
+        self.pdf_drawer.drawString(
+            certifier_settings["left"],
+            certifier_settings["bottom"],
+            certifier_settings["text"],
+        )
+        return self
+
+    def add_qrcode(self, url: str):
+        """
+        Adds QR code to generate PDF.
+
+        Arguments:
+            url (str)
+                URL to create the certificate's QR.
+        Returns:
+            self (CertificateBuilder)
+                Returns itself for method chaining.
+        """
+        qrcode_settings = self.settings["qrcode"]
+
+        # Generate QR code and resize it
+        qrcode_generator = QRCode(version=4, border=4)
+        qrcode_generator.add_data(url)
+        qrcode_generator.make(fit=True)
+        qrcode = qrcode_generator.make_image(
+            fill_color="black",
+            back_color="white",
+        )
+        qrcode = qrcode.resize(
+            (qrcode_settings["width"], qrcode_settings["height"]), Image.LANCZOS
+        )
+        self.pdf_drawer.drawImage(
+            ImageReader(qrcode),
+            qrcode_settings["left"],
+            qrcode_settings["bottom"],
+            qrcode_settings["width"],
+            qrcode_settings["height"],
+        )
+        return self
+
+    def save(self) -> BytesIO:
+        """
+        Saves a PDF certificate with the object's information.
+
+        Returns:
+            Bytes of the generated PDF.
+        """
+        self.pdf_drawer.save()
+        self.buffer.seek(0)
+        return self.buffer

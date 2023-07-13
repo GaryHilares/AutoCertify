@@ -13,7 +13,7 @@ from flask import Flask, request, render_template, send_file
 from flask_bcrypt import Bcrypt
 import requests
 from utils import get_database, check_metadata
-from certificate_builder import get_certificate_pdf
+from certificate_builder import CertificateBuilder
 
 # Initialize app and config
 load_dotenv()
@@ -291,11 +291,12 @@ def download_certificate():
         settings = requests.get(certificate["img_url"], timeout=3).json()
 
     # Generate certificate
-    certificate_pdf = get_certificate_pdf(
-        certificate,
-        certifier,
-        settings,
-        f"{request.host_url}view-certificate?id={str(id)}",
+    certificate_pdf = (
+        CertificateBuilder(settings)
+        .draw_template()
+        .add_certificate_data(certificate, certifier)
+        .add_qrcode(f"{request.host_url}view-certificate?id={str(id)}")
+        .save()
     )
 
     # Return PDF
