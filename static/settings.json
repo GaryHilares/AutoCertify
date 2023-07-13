@@ -1,0 +1,8 @@
+{
+    "template": "http://127.0.0.1:5000/static/template.png",
+    "font": {"name": "Poppins Bold", "size": 32},
+    "qrcode": {"left": 600, "bottom": 100, "width": 125, "height": 125},
+    "name": {"left": 390, "bottom": 310},
+    "title": {"left": 322, "bottom": 245},
+    "certifier": {"left": 377, "bottom": 115}
+}
