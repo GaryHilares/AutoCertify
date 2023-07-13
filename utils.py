@@ -29,8 +29,15 @@ def get_database() -> any:
             A database connection to the database specified by the
             environment variables.
     """
+    # Retrieve authentication data from environment
+    username = environ["DB_USERNAME"]
+    password = environ["DB_PASSWORD"]
+    hostname = environ["DB_HOSTNAME"]
+
     # Connect to the MongoDB cluster
-    connection_string = f'mongodb+srv://{environ["DB_USERNAME"]}:{environ["DB_PASSWORD"]}@{environ["DB_HOSTNAME"]}/?retryWrites=true&w=majority'
+    connection_string = (
+        f"mongodb+srv://{username}:{password}@{hostname}/?retryWrites=true&w=majority"
+    )
     client = MongoClient(connection_string)
 
     # Return "project2" database
@@ -38,6 +45,20 @@ def get_database() -> any:
 
 
 def check_metadata(url: str, name: str, content: str) -> bool:
+    """
+    Checks whether a website has a `meta` tag set to an specific value.
+
+    Arguments:
+        url (str)
+            Website's url.
+        name (str)
+            Name of the `meta` tag to search.
+        content (str)
+            Expected value of the `meta` tag
+    Returns:
+        True if the website at `url` has a `meta` tag with `name="{name}"`
+        and `content="{content}"`. False otherwise..
+    """
     # Retrieve URL
     response = requests.get(url, timeout=3)  # error if url is invalid
     meta_elements = BeautifulSoup(response.text).find_all("meta")
@@ -51,19 +72,49 @@ def check_metadata(url: str, name: str, content: str) -> bool:
 
 
 def same_structure(dict1: any, dict2: any) -> bool:
+    """
+    Checks whether two dictionaries have the same structure recursively. It is considered
+    that two objects are of the same structure if they are two non-dictionary objects of
+    the same type or if they are two dictionaries whose keys are equal and values have
+    the same structure.
+
+    Arguments:
+        dict1 (any)
+            The first variable to compare.
+        dict2 (any)
+            The second variable to compare.
+    Returns:
+        True if dict2's structure matches dict1's, False otherwise.
+    """
+    # Base case: At least one of dict1 or dict2 is not a dict, so just compare types.
     if not isinstance(dict1, dict) or not isinstance(dict2, dict):
         return type(dict1) is type(dict2)
-    if any(
+
+    # Recursive case: Both dict1 or dict2 are dict, so check elements recursively
+    return not any(
         key not in dict2 or not same_structure(dict1[key], dict2[key]) for key in dict1
-    ):
-        return False
-    return True
+    )
 
 
 def get_certificate_pdf(
     certificate_data: dict, certifier_data: dict, settings: dict, url: str
 ) -> BytesIO:
-    # Load default settings and compare them to settings by structure
+    """
+    Creates a PDF certificate with the information passed.
+
+    Arguments:
+        certificate_data (dict)
+            Information about the certificate, including the name and title.
+        certifier_data (dict)
+            Information about the certifier, including its name.
+        settings (dict)
+            Information about the layout of the generated certificate PDF.
+        url (str)
+            URL to create the certificate's QR.
+    Returns:
+        Bytes of the generated PDF.
+    """
+    # Load default settings and use them if settings are incomplete
     default_settings = {
         "template": "static/template.png",
         "font": {"name": "Poppins Bold", "size": 32},

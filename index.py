@@ -7,19 +7,30 @@ DESCRIPTION
 """
 import re
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, send_file
 from flask_bcrypt import Bcrypt
 import requests
 from utils import get_database, check_metadata, get_certificate_pdf
 
+# Initialize app and config
 load_dotenv()
 app = Flask(__name__)
+
+# Initialize objects based on app config
 bcrypt = Bcrypt(app)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    View to register a new user.
+
+    Accessing this view's route with GET will render a form to register a new
+    user. Accessing this view's route with POST will register a new user with
+    the received arguments.
+    """
     # If request method is GET, return form
     if request.method == "GET":
         return render_template("register.html")
@@ -66,6 +77,16 @@ def register():
 
 @app.route("/verify-account", methods=["GET", "POST"])
 def verify_account():
+    """
+    Verify an user's account. To be verified, a certifier must have a website
+    where they have a `meta` tag with `name="ca-key"` and
+    `content="ca-key-{username}"`. Then, the URL of the website must be
+    submitted through this form.
+
+    Accessing this view's route with GET will render a form to verify the
+    user's account. Accessing this view's route with POST will try to
+    verify the user using the information provided.
+    """
     # If request method is GET, return form
     if request.method == "GET":
         return render_template("verify-account.html")
@@ -105,6 +126,13 @@ def verify_account():
 
 @app.route("/create-certificate", methods=["GET", "POST"])
 def create_certificate():
+    """
+    Create a new certificate.
+
+    Accessing this view's route with GET will render a form to create a
+    a certificate. Accessing this view's route with POST will create a
+    certificate with the arguments received.
+    """
     # If request method is GET, return form
     if request.method == "GET":
         return render_template("create-certificate.html")
@@ -162,6 +190,12 @@ def create_certificate():
 
 @app.route("/view-certificate", methods=["GET"])
 def view_certificate():
+    """
+    View a certificate.
+
+    Accessing this view's route with GET will render the information of the certificate
+    whose `_id` matches the query parameter `id`.
+    """
     # Retrieve and check GET input
     certificate_id = request.args.get("id", None)
     if not certificate_id:
@@ -173,7 +207,7 @@ def view_certificate():
     # Check that the ID is in correct format
     try:
         certificate_id = ObjectId(certificate_id)
-    except:
+    except InvalidId:
         return render_template("error.html", message="The ID's format is invalid."), 403
 
     # Check that the ID exists and retrieve certificate
@@ -213,6 +247,12 @@ def view_certificate():
 
 @app.route("/download-certificate", methods=["GET"])
 def download_certificate():
+    """
+    View a certificate.
+
+    Accessing this view's route with GET will download a PDF with the information of
+    the certificate whose `_id` matches the query parameter `id`.
+    """
     # Retrieve and check GET input
     certificate_id = request.args.get("id", None)
     if not id:
@@ -224,7 +264,7 @@ def download_certificate():
     # Check that the ID is in correct format
     try:
         certificate_id = ObjectId(certificate_id)
-    except:
+    except InvalidId:
         return render_template("error.html", message="The ID's format is invalid."), 403
 
     # Check that the ID exists and retrieve certificate
