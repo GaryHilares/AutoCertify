@@ -1,11 +1,12 @@
-from flask import Flask, request, render_template, send_file
-from bson.objectid import ObjectId
 from utils import get_database, check_metadata, get_certificate_pdf
-from flask_bcrypt import Bcrypt
-import re
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
-load_dotenv()
+from flask import Flask, request, render_template, send_file
+from flask_bcrypt import Bcrypt
+import requests
+import re
 
+load_dotenv()
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
@@ -163,11 +164,14 @@ def download_certificate():
     if not certifier:
         return render_template('error.html', critical_error=True, message="Certificate data is corrupt."), 500
     
-    # Generate QR code
-    certificate_pdf = get_certificate_pdf(certificate, certifier, f"{request.host_url}view-certificate?id={str(id)}")
+    settings = None
+    if "img_url" in certificate:
+        settings = requests.get(certificate["img_url"]).json()
 
-    # # Redirect to image
-    # return f"<img src=\"{data_uri}\">"
+    # Generate certificate
+    certificate_pdf = get_certificate_pdf(certificate, certifier, settings, f"{request.host_url}view-certificate?id={str(id)}")
+
+    # Return PDF
     return send_file(certificate_pdf, mimetype="application/pdf", as_attachment=True, download_name="Certificate.pdf")
 
 if __name__ == '__main__':

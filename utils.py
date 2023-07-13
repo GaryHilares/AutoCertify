@@ -33,43 +33,62 @@ def check_metadata(url, name, content):
     # Metadata information did not match, so return false
     return False
 
-def get_certificate_pdf(certificate_data, certifier_data, url):
-    font_settings = {"path": "static/Poppins-Bold.ttf", "size": 32}
-    qrcode_settings = {"left": 600, "bottom": 100, "width": 125, "height": 125}
-    name_settings = {"left": 390, "bottom": 310, "text": certificate_data["name"]}
-    title_settings = {"left": 322, "bottom": 245, "text": certificate_data["title"]}
-    certifier_settings = {"left": 377, "bottom": 115, "text": certifier_data["name"]}
+def same_structure(dict1, dict2):
+    if type(dict1) != dict or type(dict2) != dict():
+        return type(dict1) == type(dict2)
+    for key in dict1:
+        if key not in dict2:
+            return False
+        if not same_structure(dict1[key], dict2[key]):
+            return False
+    return True
+
+def get_certificate_pdf(certificate_data, certifier_data, settings, url):
+    # Load default settings and compare them to settings by structure
+    default_settings = {
+        "template": "static/template.png",
+        "font": {"name": "Poppins Bold", "size": 32},
+        "qrcode": {"left": 600, "bottom": 100, "width": 125, "height": 125},
+        "name": {"left": 390, "bottom": 310},
+        "title": {"left": 322, "bottom": 245},
+        "certifier": {"left": 377, "bottom": 115}
+    }
+    if not same_structure(settings, default_settings):
+        settings = default_settings
+    
+    # Parse settings
+    font_settings = settings["font"]
+    qrcode_settings = settings["qrcode"]
+    name_settings = {**settings["name"], "text": certificate_data["name"]}
+    title_settings = {**settings["title"], "text": certificate_data["title"]}
+    certifier_settings = {**settings["certifier"], "text": certifier_data["name"]}
 
     # Set page dimensions
     page_dimensions = landscape(A4)
 
-    # Set QR generator information
+    # Generate QR code and resize it
     qrcode_generator = QRCode(
         version=4,
         border=4,
     )
-    
-    # Add data to QR code generator
     qrcode_generator.add_data(url)
-
-    # Compile QR generator
     qrcode_generator.make(fit=True)
-
-    # Generate QR code
     qrcode = qrcode_generator.make_image(
         fill_color="black",
         back_color="white",
     )
-
-    # Resize the QR code
     qrcode = qrcode.resize((qrcode_settings["width"], qrcode_settings["height"]), Image.LANCZOS)
 
     # Open certificate template
-    certificate_template = Image.open("static/template.png", 'r')
+    certificate_template = Image.open(BytesIO(requests.get(settings["template"]).content)) if settings["template"].startswith("http") else Image.open(settings["template"], 'r')
     certificate_template.resize((int(page_dimensions[0]), int(page_dimensions[1])),Image.LANCZOS)
 
     # Load font
-    pdfmetrics.registerFont(TTFont('Certificate Font', font_settings["path"]))
+    available_fonts = {
+        "Poppins Bold": "static/Poppins-Bold.ttf"
+    }
+    font_path = available_fonts[font_settings["name"]] if font_settings["name"] in available_fonts else available_fonts["Poppins Bold"]
+    pdfmetrics.registerFont(TTFont('Certificate Font', font_path))
 
     # Draw elements
     buffer = BytesIO()
@@ -82,5 +101,6 @@ def get_certificate_pdf(certificate_data, certifier_data, url):
     c.drawImage(ImageReader(qrcode), qrcode_settings["left"], qrcode_settings["bottom"], qrcode_settings["width"], qrcode_settings["height"])
     c.save()
 
+    # Return buffer
     buffer.seek(0)
     return buffer
