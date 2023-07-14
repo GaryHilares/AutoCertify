@@ -8,8 +8,8 @@ DESCRIPTION
 from bson import ObjectId
 from flask import Flask, g
 from flask_login import LoginManager
-from app.views.certificates import certificates_blueprint
-from app.views.accounts import accounts_blueprint
+from app.views.certificate import certificate_blueprint
+from app.views.account import account_blueprint
 from app.models.user import User
 
 
@@ -25,11 +25,11 @@ def create_app() -> Flask:
     # Initialize app and config
     app = Flask(__name__)
     app.secret_key = "somethinguniqueandsecret"
-    app.register_blueprint(certificates_blueprint)
-    app.register_blueprint(accounts_blueprint)
+    app.register_blueprint(certificate_blueprint)
+    app.register_blueprint(account_blueprint)
 
     @app.teardown_request
-    def clean():
+    def clean(error):
         client = getattr(g, "db_client", None)
         if client:
             client.close()

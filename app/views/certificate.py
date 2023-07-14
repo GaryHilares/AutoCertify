@@ -14,15 +14,15 @@ from bson.errors import InvalidId
 from app.certificate_builder import CertificateBuilder
 from app.models.certificate import Certificate
 
-certificates_blueprint = Blueprint(
-    "certificates", __name__, template_folder="templates", url_prefix="/certificate"
+certificate_blueprint = Blueprint(
+    "certificate", __name__, template_folder="templates", url_prefix="/certificate"
 )
 
 # Initialize Flask extensions and later add app configuration
 bcrypt = Bcrypt()
 
 
-@certificates_blueprint.record_once
+@certificate_blueprint.record_once
 def on_load(state: any) -> None:
     """
     Adds app configuration to Flask extensions.
@@ -35,7 +35,7 @@ def on_load(state: any) -> None:
     bcrypt.init_app(state.app)
 
 
-@certificates_blueprint.route("/create", methods=["GET", "POST"])
+@certificate_blueprint.route("/create", methods=["GET", "POST"])
 @login_required
 def create_certificate():
     """
@@ -72,7 +72,7 @@ def create_certificate():
     )
 
 
-@certificates_blueprint.route("/view", methods=["GET"])
+@certificate_blueprint.route("/view", methods=["GET"])
 def view_certificate():
     """
     View a certificate.
@@ -128,7 +128,7 @@ def view_certificate():
     )
 
 
-@certificates_blueprint.route("/download", methods=["GET"])
+@certificate_blueprint.route("/download", methods=["GET"])
 def download_certificate():
     """
     View a certificate.

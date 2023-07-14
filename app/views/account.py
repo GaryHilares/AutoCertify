@@ -12,15 +12,15 @@ from flask_login import current_user, login_user, login_required
 from app.models.user import User
 from app.utils import check_metadata
 
-accounts_blueprint = Blueprint(
-    "accounts", __name__, template_folder="templates", url_prefix="/account"
+account_blueprint = Blueprint(
+    "account", __name__, template_folder="templates", url_prefix="/account"
 )
 
 # Initialize Flask extensions and later add app configuration
 bcrypt = Bcrypt()
 
 
-@accounts_blueprint.record_once
+@account_blueprint.record_once
 def on_load(state):
     """
     Adds app configuration to Flask extensions.
@@ -33,7 +33,7 @@ def on_load(state):
     bcrypt.init_app(state.app)
 
 
-@accounts_blueprint.route("/login", methods=["GET", "POST"])
+@account_blueprint.route("/login", methods=["GET", "POST"])
 def login():
     """
     View to register a new user.
@@ -67,7 +67,7 @@ def login():
     return render_template("success.html", message="Logged in successfully")
 
 
-@accounts_blueprint.route("/register", methods=["GET", "POST"])
+@account_blueprint.route("/register", methods=["GET", "POST"])
 def register():
     """
     View to register a new user.
@@ -113,7 +113,7 @@ def register():
     )
 
 
-@accounts_blueprint.route("/verify", methods=["GET", "POST"])
+@account_blueprint.route("/verify", methods=["GET", "POST"])
 @login_required
 def verify_account():
     """
