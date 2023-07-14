@@ -10,7 +10,7 @@ from bson import ObjectId
 from flask import Blueprint, render_template, request
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, login_required
-from app.user import User
+from app.models.user import User
 from app.utils import get_database, check_metadata
 
 accounts_blueprint = Blueprint(

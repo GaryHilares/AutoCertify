@@ -9,7 +9,7 @@ from flask import Flask
 from flask_login import LoginManager
 from app.views.certificates import certificates_blueprint
 from app.views.accounts import accounts_blueprint
-from app.user import User
+from app.models.user import User
 
 
 def create_app() -> Flask:
