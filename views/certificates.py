@@ -10,8 +10,13 @@ certificates_blueprint = Blueprint(
     "certificates", __name__, template_folder="templates", url_prefix="/certificate"
 )
 
-# Initialize objects without app configuration
+# Initialize objects and later add app configuration
 bcrypt = Bcrypt()
+
+
+@certificates_blueprint.record_once
+def on_load(state):
+    bcrypt.init_app(state.app)
 
 
 @certificates_blueprint.route("/create", methods=["GET", "POST"])

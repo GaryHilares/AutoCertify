@@ -7,8 +7,13 @@ accounts_blueprint = Blueprint(
     "accounts", __name__, template_folder="templates", url_prefix="/account"
 )
 
-# Initialize objects without app configuration
+# Initialize objects and later add app configuration
 bcrypt = Bcrypt()
+
+
+@accounts_blueprint.record_once
+def on_load(state):
+    bcrypt.init_app(state.app)
 
 
 @accounts_blueprint.route("/register", methods=["GET", "POST"])
