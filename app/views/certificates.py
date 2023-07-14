@@ -1,5 +1,14 @@
+"""
+FILE
+    certificates.py
+DESCRIPTION
+    Declares a blueprint which holds the views for actions related to certificates.
+    All views are prefixed by `/certificate`.
+"""
+
 from flask import Blueprint, request, render_template, send_file
 from flask_bcrypt import Bcrypt
+from flask_login import current_user, login_required
 import requests
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
@@ -10,16 +19,25 @@ certificates_blueprint = Blueprint(
     "certificates", __name__, template_folder="templates", url_prefix="/certificate"
 )
 
-# Initialize objects and later add app configuration
+# Initialize Flask extensions and later add app configuration
 bcrypt = Bcrypt()
 
 
 @certificates_blueprint.record_once
-def on_load(state):
+def on_load(state: any) -> None:
+    """
+    Adds app configuration to Flask extensions.
+
+    Arguments:
+        state (any)
+            A state object created by Flask whose `app` attribute refers to the main
+            Flask application.
+    """
     bcrypt.init_app(state.app)
 
 
 @certificates_blueprint.route("/create", methods=["GET", "POST"])
+@login_required
 def create_certificate():
     """
     Create a new certificate.
@@ -33,16 +51,9 @@ def create_certificate():
         return render_template("create-certificate.html")
 
     # Retrieve and check POST input
-    certifier_name = request.form.get("certifier-name", None)
-    certifier_password = request.form.get("certifier-password", None)
     certificate_name = request.form.get("certificate-name", None)
     certificate_title = request.form.get("certificate-title", None)
-    if (
-        not certifier_name
-        or not certifier_password
-        or not certificate_name
-        or not certificate_title
-    ):
+    if not certificate_name or not certificate_title:
         return (
             render_template(
                 "error.html", message="A field is missing in your request."
@@ -52,27 +63,13 @@ def create_certificate():
 
     # Retrieve certifier and check that its credentials are correct
     database = get_database()
-    certifier = database["certifiers"].find_one(
-        {
-            "name": certifier_name,
-        }
-    )
-    if not certifier or not bcrypt.check_password_hash(
-        certifier["password"], certifier_password
-    ):
-        return (
-            render_template(
-                "error.html", message="Certifier credentials are incorrect."
-            ),
-            403,
-        )
 
     # Update database with new certificate
     insert_data = database["certificate-list"].insert_one(
         {
             "name": certificate_name,
             "title": certificate_title,
-            "certifier_id": certifier["_id"],
+            "certifier_id": ObjectId(current_user.id),
         }
     )
 
