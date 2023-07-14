@@ -1,7 +1,7 @@
 import re
 from flask import Blueprint, render_template, request
 from flask_bcrypt import Bcrypt
-from utils import get_database, check_metadata
+from app.utils import get_database, check_metadata
 
 accounts_blueprint = Blueprint(
     "accounts", __name__, template_folder="templates", url_prefix="/account"

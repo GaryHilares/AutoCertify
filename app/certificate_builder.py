@@ -14,7 +14,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4, landscape
 import requests
-from utils import same_structure
+from app.utils import same_structure
 
 
 class CertificateBuilder:

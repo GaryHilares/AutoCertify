@@ -3,8 +3,8 @@ from flask_bcrypt import Bcrypt
 import requests
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from certificate_builder import CertificateBuilder
-from utils import get_database
+from app.certificate_builder import CertificateBuilder
+from app.utils import get_database
 
 certificates_blueprint = Blueprint(
     "certificates", __name__, template_folder="templates", url_prefix="/certificate"
