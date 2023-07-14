@@ -124,7 +124,7 @@ def view():
             "name": certifier.name,
             "url": certifier.url,
         },
-        download_url=f"{request.host_url}/certificate/download?id={certificate.id_}",
+        download_url=f"{request.host_url}certificate/download?id={certificate.id_}",
     )
 
 
