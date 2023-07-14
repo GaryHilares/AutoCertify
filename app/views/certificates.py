@@ -9,11 +9,10 @@ DESCRIPTION
 from flask import Blueprint, request, render_template, send_file
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_required
-import requests
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from app.certificate_builder import CertificateBuilder
-from app.utils import get_database
+from app.models.certificate import Certificate
 
 certificates_blueprint = Blueprint(
     "certificates", __name__, template_folder="templates", url_prefix="/certificate"
@@ -61,17 +60,10 @@ def create_certificate():
             400,
         )
 
-    # Retrieve certifier and check that its credentials are correct
-    database = get_database()
-
     # Update database with new certificate
-    insert_data = database["certificate-list"].insert_one(
-        {
-            "name": certificate_name,
-            "title": certificate_title,
-            "certifier_id": ObjectId(current_user.id),
-        }
-    )
+    insert_data = Certificate.create(
+        certificate_name, certificate_title, ObjectId(current_user.id_)
+    ).save()
 
     # Return success message
     return render_template(
@@ -103,13 +95,12 @@ def view_certificate():
         return render_template("error.html", message="The ID's format is invalid."), 403
 
     # Check that the ID exists and retrieve certificate
-    database = get_database()
-    certificate = database["certificate-list"].find_one({"_id": certificate_id})
+    certificate = Certificate.get_by_id(certificate_id)
     if not certificate:
         return render_template("error.html", message="ID was not found."), 403
 
     # Check that certifier is valid and retrieve its information
-    certifier = database["certifiers"].find_one({"_id": certificate["certifier_id"]})
+    certifier = certificate.get_certifier()
     if not certifier:
         return (
             render_template(
@@ -124,16 +115,16 @@ def view_certificate():
     return render_template(
         "view-certificate.html",
         certificate={
-            "id": certificate["_id"],
-            "name": certificate["name"],
-            "title": certificate["title"],
+            "id": certificate.id_,
+            "name": certificate.name,
+            "title": certificate.title,
         },
         certifier={
-            "id": certifier["_id"],
-            "name": certifier["name"],
-            "url": certifier["url"],
+            "id": certifier.id_,
+            "name": certifier.name,
+            "url": certifier.url,
         },
-        download_url=f'{request.host_url}/certificate/download?id={certificate["_id"]}',
+        download_url=f"{request.host_url}/certificate/download?id={certificate.id_}",
     )
 
 
@@ -160,13 +151,12 @@ def download_certificate():
         return render_template("error.html", message="The ID's format is invalid."), 403
 
     # Check that the ID exists and retrieve certificate
-    database = get_database()
-    certificate = database["certificate-list"].find_one({"_id": certificate_id})
+    certificate = Certificate.get_by_id(certificate_id)
     if not certificate:
         return render_template("error.html", message="ID was not found."), 403
 
     # Check that certifier is valid and retrieve its information
-    certifier = database["certifiers"].find_one({"_id": certificate["certifier_id"]})
+    certifier = certificate.get_certifier()
     if not certifier:
         return (
             render_template(
@@ -177,13 +167,9 @@ def download_certificate():
             500,
         )
 
-    settings = None
-    if "img_url" in certificate:
-        settings = requests.get(certificate["img_url"], timeout=3).json()
-
     # Generate certificate
     certificate_pdf = (
-        CertificateBuilder(settings)
+        CertificateBuilder({})
         .draw_template()
         .add_certificate_data(certificate, certifier)
         .add_qrcode(f"{request.host_url}certificate/view?id={str(id)}")

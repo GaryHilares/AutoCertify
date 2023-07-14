@@ -6,34 +6,8 @@ DESCRIPTION
     includes comparing dictionaries for deep structural equality, connecting
     to the database, managing requests to websites, and more.
 """
-from os import environ
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 import requests
-
-
-def get_database() -> any:
-    """
-    Connects to the Mongo database specified by the environment variables.
-
-    Returns:
-        database (MongoDatabase)
-            A database connection to the database specified by the
-            environment variables.
-    """
-    # Retrieve authentication data from environment
-    username = environ["DB_USERNAME"]
-    password = environ["DB_PASSWORD"]
-    hostname = environ["DB_HOSTNAME"]
-
-    # Connect to the MongoDB cluster
-    connection_string = (
-        f"mongodb+srv://{username}:{password}@{hostname}/?retryWrites=true&w=majority"
-    )
-    client = MongoClient(connection_string)
-
-    # Return "project2" database
-    return client["project2"]
 
 
 def check_metadata(url: str, name: str, content: str) -> bool:

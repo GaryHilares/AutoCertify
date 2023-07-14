@@ -24,7 +24,7 @@ class CertificateBuilder:
     """
 
     default_settings = {
-        "template": "static/template.png",
+        "template": "./app/static/template.png",
         "font": {"name": "Poppins Bold", "size": 32},
         "qrcode": {"left": 600, "bottom": 100, "width": 125, "height": 125},
         "name": {"left": 390, "bottom": 310},
@@ -43,11 +43,12 @@ class CertificateBuilder:
             self (CertificateBuilder)
                 A newly created `CertificateBuilder` instance.
         """
-        self.settings = (
-            settings
-            if same_structure(settings, CertificateBuilder.default_settings)
-            else CertificateBuilder.default_settings
-        )
+        self.settings = CertificateBuilder.default_settings
+        # (
+        #     settings
+        #     if same_structure(settings, CertificateBuilder.default_settings)
+        #     else CertificateBuilder.default_settings
+        # )
         self.buffer = BytesIO()
         self.pdf_drawer = canvas.Canvas(self.buffer, pagesize=landscape(A4))
 
@@ -91,15 +92,15 @@ class CertificateBuilder:
                 Returns itself for method chaining.
         """
         font_settings = self.settings["font"]
-        name_settings = {**self.settings["name"], "text": certificate_data["name"]}
-        title_settings = {**self.settings["title"], "text": certificate_data["title"]}
+        name_settings = {**self.settings["name"], "text": certificate_data.name}
+        title_settings = {**self.settings["title"], "text": certificate_data.title}
         certifier_settings = {
             **self.settings["certifier"],
-            "text": certifier_data["name"],
+            "text": certifier_data.name,
         }
 
         # Load font
-        available_fonts = {"Poppins Bold": "static/Poppins-Bold.ttf"}
+        available_fonts = {"Poppins Bold": "./app/static/Poppins-Bold.ttf"}
         font_path = (
             available_fonts[font_settings["name"]]
             if font_settings["name"] in available_fonts

@@ -6,12 +6,11 @@ DESCRIPTION
     accounts. All views are prefixed by `/account`.
 """
 import re
-from bson import ObjectId
 from flask import Blueprint, render_template, request
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, login_required
 from app.models.user import User
-from app.utils import get_database, check_metadata
+from app.utils import check_metadata
 
 accounts_blueprint = Blueprint(
     "accounts", __name__, template_folder="templates", url_prefix="/account"
@@ -57,15 +56,14 @@ def login():
         )
 
     # Check that account exists in database
-    database = get_database()
-    certifier = database["certifiers"].find_one({"name": name})
+    certifier = User.get_by_name(name)
     if certifier is None or not bcrypt.check_password_hash(
-        certifier["password"], password
+        certifier.password, password
     ):
         return render_template("error.html", message="Incorrect credentials.")
 
     # Success
-    login_user(User(certifier["_id"]), remember=True)
+    login_user(certifier, remember=True)
     return render_template("success.html", message="Logged in successfully")
 
 
@@ -101,20 +99,13 @@ def register():
         )
 
     # Check that account does not already exist in database
-    database = get_database()
-    if database["certifiers"].find_one({"name": name}) is not None:
+    if User.get_by_name(name) is not None:
         return render_template(
             "error.html", message=f"An account with the name {name} already exists."
         )
 
     # Update database with new account
-    database["certifiers"].insert_one(
-        {
-            "name": name,
-            "password": bcrypt.generate_password_hash(password),
-            "url": "None",
-        }
-    )
+    User.create(name, bcrypt.generate_password_hash(password)).save()
 
     # Return success message
     return render_template(
@@ -145,8 +136,7 @@ def verify_account():
         return render_template("error.html", message="URL is missing."), 400
 
     # Check that certifier exists and retrieve its information
-    database = get_database()
-    certifier = database["certifiers"].find_one({"_id": ObjectId(current_user.id)})
+    certifier = User.get_by_id(current_user.id)
     name = certifier["name"]
 
     # Check if metadata in URL is valid for this specific certifier
@@ -160,9 +150,8 @@ def verify_account():
         )
 
     # Update database with verified URL
-    database["certifiers"].update_one(
-        {"_id": ObjectId(current_user.id)}, {"$set": {"url": url}}
-    )
+    certifier.set_verified(url)
+    certifier.save()
 
     # Return success message
     return render_template(

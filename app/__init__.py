@@ -5,7 +5,8 @@ DESCRIPTION
     Entrypoint for Certificate Automation. It creates the Flask app and ties
     the views to the routes of the application.
 """
-from flask import Flask
+from bson import ObjectId
+from flask import Flask, g
 from flask_login import LoginManager
 from app.views.certificates import certificates_blueprint
 from app.views.accounts import accounts_blueprint
@@ -27,12 +28,18 @@ def create_app() -> Flask:
     app.register_blueprint(certificates_blueprint)
     app.register_blueprint(accounts_blueprint)
 
+    @app.teardown_request
+    def clean():
+        client = getattr(g, "db_client", None)
+        if client:
+            client.close()
+
     login_manager = LoginManager()
     login_manager.login_view = "accounts.login"
     login_manager.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User(user_id)
+        return User.get_by_id(ObjectId(user_id))
 
     return app
