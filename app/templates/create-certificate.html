@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}Create certificate{% endblock %}
 {% block content %}
-<form method="POST" action="/certificate/create" class="m-3 p-3 border">
+<form method="POST" action="{{ url_for('certificate.create') }}" class="m-3 p-3 border">
     <div class="form-group my-1">
         <label for="certificate-name">Receiver's name</label>
         <input class="form-control" id="certificate-name" name="certificate-name" type="text">

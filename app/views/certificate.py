@@ -37,7 +37,7 @@ def on_load(state: any) -> None:
 
 @certificate_blueprint.route("/create", methods=["GET", "POST"])
 @login_required
-def create_certificate():
+def create():
     """
     Create a new certificate.
 
@@ -73,7 +73,7 @@ def create_certificate():
 
 
 @certificate_blueprint.route("/view", methods=["GET"])
-def view_certificate():
+def view():
     """
     View a certificate.
 
@@ -129,7 +129,7 @@ def view_certificate():
 
 
 @certificate_blueprint.route("/download", methods=["GET"])
-def download_certificate():
+def download():
     """
     View a certificate.
 

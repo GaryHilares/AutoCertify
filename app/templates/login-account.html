@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
-<form method="POST" action="/account/login" class="m-3 p-3 border">
+<form method="POST" action="{{ url_for('account.login') }}" class="m-3 p-3 border">
     <div class="form-group my-1">
         <label for="name">Name</label>
         <input class="form-control" id="name" name="name" type="text">
