@@ -6,7 +6,7 @@ DESCRIPTION
     All views are prefixed by `/certificate`.
 """
 
-from flask import Blueprint, request, render_template, send_file
+from flask import Blueprint, request, render_template, send_file, url_for
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_required
 from bson.objectid import ObjectId
@@ -72,8 +72,8 @@ def create():
     )
 
 
-@certificate_blueprint.route("/view", methods=["GET"])
-def view():
+@certificate_blueprint.route("/<string:certificate_id>/view", methods=["GET"])
+def view(certificate_id):
     """
     View a certificate.
 
@@ -81,7 +81,6 @@ def view():
     whose `_id` matches the query parameter `id`.
     """
     # Retrieve and check GET input
-    certificate_id = request.args.get("id", None)
     if not certificate_id:
         return (
             render_template("error.html", message="ID is missing in your request."),
@@ -124,12 +123,14 @@ def view():
             "name": certifier.name,
             "url": certifier.url,
         },
-        download_url=f"{request.host_url}certificate/download?id={certificate.id_}",
+        download_url=url_for(
+            "certificate.download", certificate_id=str(certificate_id)
+        ),
     )
 
 
-@certificate_blueprint.route("/download", methods=["GET"])
-def download():
+@certificate_blueprint.route("/<string:certificate_id>/download", methods=["GET"])
+def download(certificate_id):
     """
     View a certificate.
 
@@ -137,8 +138,7 @@ def download():
     the certificate whose `_id` matches the query parameter `id`.
     """
     # Retrieve and check GET input
-    certificate_id = request.args.get("id", None)
-    if not id:
+    if not certificate_id:
         return (
             render_template("error.html", message="ID is missing in your request."),
             403,
@@ -172,7 +172,11 @@ def download():
         CertificateBuilder({})
         .draw_template()
         .add_certificate_data(certificate, certifier)
-        .add_qrcode(f"{request.host_url}certificate/view?id={str(id)}")
+        .add_qrcode(
+            url_for(
+                "certificate.view", _external=True, certificate_id=str(certificate_id)
+            )
+        )
         .save()
     )
 
