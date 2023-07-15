@@ -87,13 +87,8 @@ def view(certificate_id: str) -> ResponseReturnValue:
             403,
         )
 
-    # Check that the ID is in correct format
-    try:
-        certificate_id = ObjectId(certificate_id)
-    except InvalidId:
-        return render_template("error.html", message="The ID's format is invalid."), 403
-
-    # Check that the ID exists and retrieve certificate
+    # Check that the ID is in valid format and exists and retrieve certificate
+    print(certificate_id)
     certificate = Certificate.get_by_id(certificate_id)
     if not certificate:
         return render_template("error.html", message="ID was not found."), 403
@@ -142,13 +137,7 @@ def download(certificate_id: str) -> ResponseReturnValue:
             403,
         )
 
-    # Check that the ID is in correct format
-    try:
-        certificate_id = ObjectId(certificate_id)
-    except InvalidId:
-        return render_template("error.html", message="The ID's format is invalid."), 403
-
-    # Check that the ID exists and retrieve certificate
+    # Check that the ID exists and is in correct format and retrieve certificate
     certificate = Certificate.get_by_id(certificate_id)
     if not certificate:
         return render_template("error.html", message="ID was not found."), 403

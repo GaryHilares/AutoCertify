@@ -117,7 +117,7 @@ def register() -> ResponseReturnValue:
 
 @account_blueprint.route("/verify", methods=["GET", "POST"])
 @login_required
-def verify_account() -> ResponseReturnValue:
+def verify() -> ResponseReturnValue:
     """
     Verify an user's account. To be verified, a certifier must have a website where they have a
     `meta` tag with `name="ca-key"` and `content="ca-key-{username}"`. Then, the URL of the website

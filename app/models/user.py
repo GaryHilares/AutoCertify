@@ -4,6 +4,7 @@ the database.
 """
 from __future__ import annotations
 from bson import ObjectId
+from bson.errors import InvalidId
 from pymongo.results import InsertOneResult, UpdateResult
 from flask_login import UserMixin
 from app.models.database import Database
@@ -16,7 +17,7 @@ class User(UserMixin):
     """
 
     def __init__(
-        self, id_: ObjectId | None, name: str, password: str, url: str | None
+        self, id_: str | None, name: str, password: str, url: str | None
     ) -> User:
         """
         Initializes a new `User` using the arguments provided. This method is mainly used internally
@@ -44,7 +45,7 @@ class User(UserMixin):
         """
         return self.id_
 
-    def set_verified(self: ObjectId, url: str) -> None:
+    def set_verified(self: User, url: str) -> None:
         """
         Sets this user as verified, adding the `url` argument as its verified URL.
 
@@ -62,11 +63,14 @@ class User(UserMixin):
             The insert's `InsertOneResult` if the user was first inserted, or the update's
             `UpdateResult`if the user had already been inserted before and has been just updated.
         """
+        # Get database
         db = Database.get()
         users = db["certifiers"]
+
+        # Update if it does not exist in database
         if self.id_:
             return users.update_one(
-                {"_id": self.id_},
+                {"_id": ObjectId(self.id_)},
                 {
                     "$set": {
                         "name": self.name,
@@ -75,11 +79,12 @@ class User(UserMixin):
                     }
                 },
             )
+        # If it has been just created, insert
         else:
             insert_result = users.insert_one(
                 {"name": self.name, "password": self.password, "url": self.url}
             )
-            self.id_ = insert_result.inserted_id
+            self.id_ = str(insert_result.inserted_id)
             return insert_result
 
     @staticmethod
@@ -97,7 +102,7 @@ class User(UserMixin):
         return User(None, name, password, None)
 
     @staticmethod
-    def get_by_id(id_: ObjectId) -> User:
+    def get_by_id(id_: str) -> User:
         """
         Retrieves the user with the given id from the database and returns it.
 
@@ -106,12 +111,19 @@ class User(UserMixin):
         Returns:
             The user with the given id, if one was found. None otherwise.
         """
+        try:
+            object_id = ObjectId(id_)
+        except InvalidId:
+            return None
         db = Database.get()
-        certifier = db["certifiers"].find_one({"_id": id_})
+        certifier = db["certifiers"].find_one({"_id": object_id})
         if not certifier:
             return None
         return User(
-            certifier["_id"], certifier["name"], certifier["password"], certifier["url"]
+            str(certifier["_id"]),
+            certifier["name"],
+            certifier["password"],
+            certifier["url"],
         )
 
     @staticmethod
@@ -129,5 +141,8 @@ class User(UserMixin):
         if not certifier:
             return None
         return User(
-            certifier["_id"], certifier["name"], certifier["password"], certifier["url"]
+            str(certifier["_id"]),
+            certifier["name"],
+            certifier["password"],
+            certifier["url"],
         )

@@ -4,6 +4,7 @@ information from the database.
 """
 from __future__ import annotations
 from bson import ObjectId
+from bson.errors import InvalidId
 from pymongo.results import InsertOneResult, UpdateResult
 from app.models.user import User
 from app.models.database import Database
@@ -16,11 +17,7 @@ class Certificate:
     """
 
     def __init__(
-        self: Certificate,
-        id_: ObjectId | None,
-        name: str,
-        title: str,
-        certifier_id: ObjectId,
+        self: Certificate, id_: str | None, name: str, title: str, certifier_id: str
     ) -> Certificate:
         """
         Initializes a new `Certificate` using the arguments provided. This method is mainly used
@@ -45,43 +42,10 @@ class Certificate:
         method can return None if no certifier with `self.certifier_id` was found. If this happens
         your data is likely to have errors.
 
-        Returns:
+        Returns:ID was not
             The certifier who issued this certificate. None if the certifier does not exist.
         """
         return User.get_by_id(self.certifier_id)
-
-    @staticmethod
-    def create(name: str, title: str, certifier_id: ObjectId) -> Certificate:
-        """
-        Creates a new `Certificate` using the arguments provided. This method does not save the
-        certificate to the database (for that call the `Certificate.save` method in the
-        `Certificate` instead).
-
-        Returns:
-            The newly created user (without id).
-        """
-        return Certificate(None, name, title, certifier_id)
-
-    @staticmethod
-    def get_by_id(id_: ObjectId) -> Certificate:
-        """
-        Retrieves the certificate with the given id from the database and returns it.
-
-        Args:
-            id_: The id of the object to search.
-        Returns:
-            The certificate with the given id, if one was found. None otherwise.
-        """
-        db = Database.get()
-        certificate = db["certificate-list"].find_one({"_id": id_})
-        if not certificate:
-            return None
-        return Certificate(
-            certificate["_id"],
-            certificate["name"],
-            certificate["title"],
-            certificate["certifier_id"],
-        )
 
     def save(self: Certificate) -> InsertOneResult | UpdateResult:
         """
@@ -93,11 +57,14 @@ class Certificate:
             `UpdateResult`if the certificate had already been inserted before and has been just
             updated.
         """
+        # Get database
         db = Database.get()
-        certificates = db["certifier-list"]
+        certificates = db["certificate-list"]
+
+        # Update if it does not exist in database
         if self.id_:
             return certificates.update_one(
-                {"_id": self.id_},
+                {"_id": ObjectId(self.id_)},
                 {
                     "$set": {
                         "name": self.name,
@@ -106,6 +73,7 @@ class Certificate:
                     }
                 },
             )
+        # If it has been just created, insert
         else:
             insert_result = certificates.insert_one(
                 {
@@ -114,5 +82,49 @@ class Certificate:
                     "certifier_id": self.certifier_id,
                 }
             )
-            self.id_ = insert_result.inserted_id
+            self.id_ = str(insert_result.inserted_id)
             return insert_result
+
+    @staticmethod
+    def create(name: str, title: str, certifier_id: str) -> Certificate:
+        """
+        Creates a new `Certificate` using the arguments provided. This method does not save the
+        certificate to the database (for that call the `Certificate.save` method in the
+        `Certificate` instead).
+
+        Args:
+            name: The name of the user to certify.
+            title: The title of the certificate.
+            certifier_id: The id of the certifier issuing this certificate.
+        Returns:
+            The newly created user (without id).
+        """
+        return Certificate(None, name, title, certifier_id)
+
+    @staticmethod
+    def get_by_id(id_: str) -> Certificate:
+        """
+        Retrieves the certificate with the given id from the database and returns it.
+
+        Args:
+            id_: The id of the object to search.
+        Returns:
+            The certificate with the given id, if one was found. None otherwise.
+        """
+        # Check that id format is valid
+        try:
+            object_id = ObjectId(id_)
+        except InvalidId:
+            return None
+        # Get database and retrieve object
+        db = Database.get()
+        certificate = db["certificate-list"].find_one({"_id": object_id})
+        # Return result
+        if not certificate:
+            return None
+        return Certificate(
+            str(certificate["_id"]),
+            certificate["name"],
+            certificate["title"],
+            certificate["certifier_id"],
+        )

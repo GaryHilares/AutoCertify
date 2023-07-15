@@ -103,6 +103,7 @@ class CertificateBuilder:
         pdfmetrics.registerFont(TTFont("Certificate Font", font_path))
         self.pdf_drawer.setFont("Certificate Font", font_settings["size"])
 
+        # Add text
         self.pdf_drawer.drawString(
             name_settings["left"], name_settings["bottom"], name_settings["text"]
         )
