@@ -1,10 +1,6 @@
 """
-FILE
-    utils.py
-DESCRIPTION
-    Provides utilities for the "Certificate Automation" Flask app. This
-    includes comparing dictionaries for deep structural equality, connecting
-    to the database, managing requests to websites, and more.
+Provides utilities for the "Certificate Automation" Flask app. This includes comparing dictionaries
+for deep structural equality, connecting to the database, managing requests to websites, and more.
 """
 from bs4 import BeautifulSoup
 import requests
@@ -15,15 +11,12 @@ def check_metadata(url: str, name: str, content: str) -> bool:
     Checks whether a website has a `meta` tag set to an specific value.
 
     Arguments:
-        url (str)
-            Website's url.
-        name (str)
-            Name of the `meta` tag to search.
-        content (str)
-            Expected value of the `meta` tag
+        url: Website's url.
+        name: Name of the `meta` tag to search.
+        content: Expected value of the `meta` tag
     Returns:
-        True if the website at `url` has a `meta` tag with `name="{name}"`
-        and `content="{content}"`. False otherwise..
+        True if the website at `url` has a `meta` tag with `name="{name}"` and
+        `content="{content}"`. False otherwise.
     """
     # Retrieve URL
     response = requests.get(url, timeout=3)  # error if url is invalid
@@ -39,16 +32,13 @@ def check_metadata(url: str, name: str, content: str) -> bool:
 
 def same_structure(dict1: any, dict2: any) -> bool:
     """
-    Checks whether two dictionaries have the same structure recursively. It is considered
-    that two objects are of the same structure if they are two non-dictionary objects of
-    the same type or if they are two dictionaries whose keys are equal and values have
-    the same structure.
+    Checks whether two dictionaries have the same structure recursively. It is considered that two
+    objects are of the same structure if they are two non-dictionary objects of the same type or if
+    they are two dictionaries whose keys are equal and values have the same structure.
 
     Arguments:
-        dict1 (any)
-            The first variable to compare.
-        dict2 (any)
-            The second variable to compare.
+        dict1: The first variable to compare.
+        dict2: The second variable to compare.
     Returns:
         True if dict2's structure matches dict1's, False otherwise.
     """

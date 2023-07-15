@@ -1,10 +1,7 @@
 """
-FILE
-    certificate_builder.py
-DESCRIPTION
-    Provides utilities for the "Certificate Automation" Flask app. This
-    includes building PDF certificates from JSON options.
+Builds PDF certificates from JSON options and provided data.
 """
+from __future__ import annotations
 from io import BytesIO
 from PIL import Image
 from qrcode import QRCode
@@ -19,8 +16,8 @@ from app.utils import same_structure
 
 class CertificateBuilder:
     """
-    Provides functionality for building certificates. Each method except `save`
-    returns `self` to allow for method chaining.
+    Provides functionality for building certificates. Each method except `save` returns `self` to
+    allow method chaining.
     """
 
     default_settings = {
@@ -32,16 +29,14 @@ class CertificateBuilder:
         "certifier": {"left": 377, "bottom": 115},
     }
 
-    def __init__(self, settings: dict):
+    def __init__(self: CertificateBuilder, settings: dict) -> CertificateBuilder:
         """
         Creates a new CertificateBuilder with the provided settings.
 
-        Arguments:
-            settings (dict)
-                Information about the layout of the generated certificate PDF.
+        Args:
+            settings: Information about the layout of the generated certificate PDF.
         Returns:
-            self (CertificateBuilder)
-                A newly created `CertificateBuilder` instance.
+            A newly created `CertificateBuilder` instance.
         """
         self.settings = CertificateBuilder.default_settings
         # (
@@ -52,14 +47,13 @@ class CertificateBuilder:
         self.buffer = BytesIO()
         self.pdf_drawer = canvas.Canvas(self.buffer, pagesize=landscape(A4))
 
-    def draw_template(self):
+    def draw_template(self: CertificateBuilder) -> CertificateBuilder:
         """
-        Adds the template to the certificate. Assumes its information was provided
-        through the settings when the object was created.
+        Adds the template to the certificate. Assumes its information was provided through the
+        settings when the object was created.
 
         Returns:
-            self (CertificateBuilder)
-                Returns itself for method chaining.
+            Itself for method chaining.
         """
         page_dimensions = landscape(A4)
         template_settings = self.settings["template"]
@@ -80,16 +74,17 @@ class CertificateBuilder:
         )
         return self
 
-    def add_certificate_data(self, certificate_data: dict, certifier_data: dict):
+    def add_certificate_data(
+        self: CertificateBuilder, certificate_data: dict, certifier_data: dict
+    ) -> CertificateBuilder:
         """
-        Arguments:
-            certificate_data (dict)
-                Information about the certificate, including the name and title.
-            certifier_data (dict)
-                Information about the certifier, including its name.
+        Adds the certificate and certifier infomration to the certificate.
+
+        Args:
+            certificate_data: Information about the certificate, including the name and title.
+            certifier_data: Information about the certifier, including its name.
         Returns:
-            self (CertificateBuilder)
-                Returns itself for method chaining.
+            Itself for method chaining.
         """
         font_settings = self.settings["font"]
         name_settings = {**self.settings["name"], "text": certificate_data.name}
@@ -122,16 +117,14 @@ class CertificateBuilder:
         )
         return self
 
-    def add_qrcode(self, url: str):
+    def add_qrcode(self: CertificateBuilder, url: str) -> CertificateBuilder:
         """
         Adds QR code to generate PDF.
 
-        Arguments:
-            url (str)
-                URL to create the certificate's QR.
+        Args:
+            url: URL to create the certificate's QR.
         Returns:
-            self (CertificateBuilder)
-                Returns itself for method chaining.
+            Itself for method chaining.
         """
         qrcode_settings = self.settings["qrcode"]
 
@@ -155,7 +148,7 @@ class CertificateBuilder:
         )
         return self
 
-    def save(self) -> BytesIO:
+    def save(self: CertificateBuilder) -> BytesIO:
         """
         Saves a PDF certificate with the object's information.
 

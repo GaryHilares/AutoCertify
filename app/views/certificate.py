@@ -1,12 +1,11 @@
 """
-FILE
-    certificates.py
-DESCRIPTION
-    Declares a blueprint which holds the views for actions related to certificates.
-    All views are prefixed by `/certificate`.
+Declares a blueprint which holds the views for actions related to certificates. All views are
+prefixed by `/certificate`.
 """
 
 from flask import Blueprint, request, render_template, send_file, url_for
+from flask.blueprints import BlueprintSetupState
+from flask.typing import ResponseReturnValue
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_required
 from bson.objectid import ObjectId
@@ -23,27 +22,28 @@ bcrypt = Bcrypt()
 
 
 @certificate_blueprint.record_once
-def on_load(state: any) -> None:
+def on_load(state: BlueprintSetupState) -> None:
     """
     Adds app configuration to Flask extensions.
 
     Arguments:
-        state (any)
-            A state object created by Flask whose `app` attribute refers to the main
-            Flask application.
+        state: A state object created by Flask whose `app` attribute refers to the main Flask
+        application.
     """
     bcrypt.init_app(state.app)
 
 
 @certificate_blueprint.route("/create", methods=["GET", "POST"])
 @login_required
-def create():
+def create() -> ResponseReturnValue:
     """
-    Create a new certificate.
+    Creates a new certificate. Accessing this view's route with GET will render a form to create a
+    certificate. Accessing this view's route with POST will create a certificate with the arguments
+    received.
 
-    Accessing this view's route with GET will render a form to create a
-    a certificate. Accessing this view's route with POST will create a
-    certificate with the arguments received.
+    Returns:
+        The certificate creation view if the route was accessed through GET. Otherwise it returns a
+        view that shows whether the certificate creation was successful.
     """
     # If request method is GET, return form
     if request.method == "GET":
@@ -73,12 +73,12 @@ def create():
 
 
 @certificate_blueprint.route("/<string:certificate_id>/view", methods=["GET"])
-def view(certificate_id):
+def view(certificate_id: str) -> ResponseReturnValue:
     """
-    View a certificate.
+    Renders the information of the certificate whose `_id` matches the path parameter `id`.
 
-    Accessing this view's route with GET will render the information of the certificate
-    whose `_id` matches the query parameter `id`.
+    Returns:
+        A page displaying the information about the certificate.
     """
     # Retrieve and check GET input
     if not certificate_id:
@@ -130,12 +130,10 @@ def view(certificate_id):
 
 
 @certificate_blueprint.route("/<string:certificate_id>/download", methods=["GET"])
-def download(certificate_id):
+def download(certificate_id: str) -> ResponseReturnValue:
     """
-    View a certificate.
-
-    Accessing this view's route with GET will download a PDF with the information of
-    the certificate whose `_id` matches the query parameter `id`.
+    Downloads a PDF with the information of the certificate whose `_id` matches the path parameter
+    `id`.
     """
     # Retrieve and check GET input
     if not certificate_id:

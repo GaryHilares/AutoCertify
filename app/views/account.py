@@ -1,12 +1,11 @@
 """
-FILE
-    accounts.py
-DESCRIPTION
-    Declares a blueprint which holds the views for actions related to
-    accounts. All views are prefixed by `/account`.
+Declares a blueprint which holds the views for actions related to accounts. All views are prefixed
+by `/account`.
 """
 import re
 from flask import Blueprint, render_template, request
+from flask.blueprints import BlueprintSetupState
+from flask.typing import ResponseReturnValue
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, login_required
 from app.models.user import User
@@ -21,26 +20,27 @@ bcrypt = Bcrypt()
 
 
 @account_blueprint.record_once
-def on_load(state):
+def on_load(state: BlueprintSetupState) -> None:
     """
     Adds app configuration to Flask extensions.
 
     Arguments:
-        state (any)
-            A state object created by Flask whose `app` attribute refers to the main
-            Flask application.
+        state: A state object created by Flask whose `app` attribute refers to the main Flask
+        application.
     """
     bcrypt.init_app(state.app)
 
 
 @account_blueprint.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> ResponseReturnValue:
     """
-    View to register a new user.
+    View to register a new user. Accessing this view's route with GET will render a form to register
+    a new user. Accessing this view's route with POST will register a new user with the received
+    arguments.
 
-    Accessing this view's route with GET will render a form to register a new
-    user. Accessing this view's route with POST will register a new user with
-    the received arguments.
+    Returns:
+        The login view if the route was accessed through GET. Otherwise it returns a view that shows
+        whether the login operation was successful.
     """
     # If request method is GET, return form
     if request.method == "GET":
@@ -68,13 +68,15 @@ def login():
 
 
 @account_blueprint.route("/register", methods=["GET", "POST"])
-def register():
+def register() -> ResponseReturnValue:
     """
-    View to register a new user.
+    View to register a new user. Accessing this view's route with GET will render a form to register
+    a new user. Accessing this view's route with POST will register a new user with the received
+    arguments.
 
-    Accessing this view's route with GET will render a form to register a new
-    user. Accessing this view's route with POST will register a new user with
-    the received arguments.
+    Returns:
+        The register view if the route was accessed through GET. Otherwise it returns a view that
+        shows whether the registration was successful.
     """
     # If request method is GET, return form
     if request.method == "GET":
@@ -115,16 +117,13 @@ def register():
 
 @account_blueprint.route("/verify", methods=["GET", "POST"])
 @login_required
-def verify_account():
+def verify_account() -> ResponseReturnValue:
     """
-    Verify an user's account. To be verified, a certifier must have a website
-    where they have a `meta` tag with `name="ca-key"` and
-    `content="ca-key-{username}"`. Then, the URL of the website must be
-    submitted through this form.
-
-    Accessing this view's route with GET will render a form to verify the
-    user's account. Accessing this view's route with POST will try to
-    verify the user using the information provided.
+    Verify an user's account. To be verified, a certifier must have a website where they have a
+    `meta` tag with `name="ca-key"` and `content="ca-key-{username}"`. Then, the URL of the website
+    must be submitted through this form. Accessing this view's route with GET will render a form to
+    verify the user's account. Accessing this view's route with POST will try to verify the user
+    using the information provided.
     """
     # If request method is GET, return form
     if request.method == "GET":
