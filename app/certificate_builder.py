@@ -38,12 +38,11 @@ class CertificateBuilder:
         Returns:
             A newly created `CertificateBuilder` instance.
         """
-        self.settings = CertificateBuilder.default_settings
-        # (
-        #     settings
-        #     if same_structure(settings, CertificateBuilder.default_settings)
-        #     else CertificateBuilder.default_settings
-        # )
+        self.settings = (
+            settings
+            if same_structure(settings, CertificateBuilder.default_settings)
+            else CertificateBuilder.default_settings
+        )
         self.buffer = BytesIO()
         self.pdf_drawer = canvas.Canvas(self.buffer, pagesize=landscape(A4))
 
