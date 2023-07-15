@@ -47,6 +47,6 @@ def same_structure(dict1: any, dict2: any) -> bool:
         return type(dict1) is type(dict2)
 
     # Recursive case: Both dict1 or dict2 are dict, so check elements recursively
-    return not any(
+    return len(dict1) == len(dict2) and not any(
         key not in dict2 or not same_structure(dict1[key], dict2[key]) for key in dict1
     )
