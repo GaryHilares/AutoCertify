@@ -1,9 +1,5 @@
 """
-FILE
-    index.py
-DESCRIPTION
-    Entrypoint for Certificate Automation. It creates the Flask app and ties
-    the views to the routes of the application.
+Creates the Flask app and ties the views to the routes of the application.
 """
 import logging
 from bson import ObjectId

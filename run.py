@@ -1,9 +1,5 @@
 """
-FILE
-    run.py
-DESCRIPTION
-    Entrypoint for Certificate Automation. Runs the Flask application located in the
-    app package.
+Entrypoint for Certificate Automation. Runs the Flask application located in the app package.
 """
 from dotenv import load_dotenv
 from app import create_app
