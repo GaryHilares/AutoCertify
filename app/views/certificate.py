@@ -88,7 +88,6 @@ def view(certificate_id: str) -> ResponseReturnValue:
         )
 
     # Check that the ID is in valid format and exists and retrieve certificate
-    print(certificate_id)
     certificate = Certificate.get_by_id(certificate_id)
     if not certificate:
         return render_template("error.html", message="ID was not found."), 403

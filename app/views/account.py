@@ -9,7 +9,7 @@ from flask.typing import ResponseReturnValue
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, login_required
 from app.models.user import User
-from app.utils import check_metadata
+from app.utils import Utils
 
 account_blueprint = Blueprint(
     "account", __name__, template_folder="templates", url_prefix="/account"
@@ -135,11 +135,11 @@ def verify() -> ResponseReturnValue:
         return render_template("error.html", message="URL is missing."), 400
 
     # Check that certifier exists and retrieve its information
-    certifier = User.get_by_id(current_user.id)
-    name = certifier["name"]
+    certifier = User.get_by_id(current_user.id_)
+    name = certifier.name
 
     # Check if metadata in URL is valid for this specific certifier
-    if not check_metadata(url, "ca-key", f"ca-key-{name}"):
+    if not Utils.check_metadata(url, "ca-key", f"ca-key-{name}"):
         return (
             render_template(
                 "error.html",

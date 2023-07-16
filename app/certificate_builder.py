@@ -11,7 +11,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4, landscape
 import requests
-from app.utils import same_structure
+from app.utils import Utils
 
 
 class CertificateBuilder:
@@ -40,7 +40,7 @@ class CertificateBuilder:
         """
         self.settings = (
             settings
-            if same_structure(settings, CertificateBuilder.default_settings)
+            if Utils.same_structure(settings, CertificateBuilder.default_settings)
             else CertificateBuilder.default_settings
         )
         self.buffer = BytesIO()

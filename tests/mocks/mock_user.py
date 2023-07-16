@@ -35,11 +35,47 @@ class MockUser(UserMixin):
         """
         return self.id_
 
+    def set_verified(self: MockUser, url: str) -> None:
+        """
+        Mocks the `set_verified` function, setting the provided URL as the verified URL of this
+        `MockUser`.
+
+        Args:
+            url: The new verified URL of this user.
+        """
+        self.url = url
+
     def save(self: MockUser) -> None:
         """
         Mocks the `save` function. No-op.
         """
         pass
+
+    @staticmethod
+    def get_by_id(id_: str) -> MockUser | None:
+        """
+        Mocks the `get_by_name` function, retrieving users from the mock "if-else database".
+
+        Returns:
+            The mocked MongoDB's id.
+        """
+        if id_ == "someid":
+            # User's password is 1234
+            return MockUser(
+                "someid",
+                "someuser",
+                b"$2b$12$St2gvjcv1nzl.ZaDqHIhLO1gLNsoZ1MB7gmO8yrHigI0j7rXx6pUW",
+                None,
+            )
+        elif id_ == "anotherid":
+            # User's password is also 1234
+            return MockUser(
+                "anotherid",
+                "anotheruser",
+                b"$2b$12$St2gvjcv1nzl.ZaDqHIhLO1gLNsoZ1MB7gmO8yrHigI0j7rXx6pUW",
+                None,
+            )
+        return None
 
     @staticmethod
     def get_by_name(name: str) -> MockUser | None:
@@ -54,6 +90,14 @@ class MockUser(UserMixin):
             return MockUser(
                 "someid",
                 "someuser",
+                b"$2b$12$St2gvjcv1nzl.ZaDqHIhLO1gLNsoZ1MB7gmO8yrHigI0j7rXx6pUW",
+                None,
+            )
+        elif name == "anotheruser":
+            # User's password is also 1234
+            return MockUser(
+                "anotherid",
+                "anotheruser",
                 b"$2b$12$St2gvjcv1nzl.ZaDqHIhLO1gLNsoZ1MB7gmO8yrHigI0j7rXx6pUW",
                 None,
             )

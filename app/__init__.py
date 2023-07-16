@@ -46,17 +46,17 @@ def create_app() -> Flask:
 
     # Creates login manager and configure it.
     login_manager = LoginManager()
-    login_manager.login_view = "accounts.login"
+    login_manager.login_view = "account.login"
     login_manager.init_app(app)
 
     @login_manager.user_loader
-    def load_user(user_id: ObjectId | str):
+    def load_user(user_id: str):
         """
         Returns a user from its id.
 
         Args:
             user_id: The user's id to retrieve.
         """
-        return User.get_by_id(ObjectId(user_id))
+        return User.get_by_id(user_id)
 
     return app
