@@ -62,7 +62,7 @@ def create() -> ResponseReturnValue:
 
     # Update database with new certificate
     insert_data = Certificate.create(
-        certificate_name, certificate_title, ObjectId(current_user.id_)
+        certificate_name, certificate_title, current_user.id_
     ).save()
 
     # Return success message

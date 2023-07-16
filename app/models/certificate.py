@@ -69,7 +69,7 @@ class Certificate:
                     "$set": {
                         "name": self.name,
                         "title": self.title,
-                        "certifier_id": self.certifier_id,
+                        "certifier_id": ObjectId(self.certifier_id),
                     }
                 },
             )
@@ -79,7 +79,7 @@ class Certificate:
                 {
                     "name": self.name,
                     "title": self.title,
-                    "certifier_id": self.certifier_id,
+                    "certifier_id": ObjectId(self.certifier_id),
                 }
             )
             self.id_ = str(insert_result.inserted_id)
@@ -126,5 +126,5 @@ class Certificate:
             str(certificate["_id"]),
             certificate["name"],
             certificate["title"],
-            certificate["certifier_id"],
+            str(certificate["certifier_id"]),
         )

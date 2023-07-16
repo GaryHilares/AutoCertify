@@ -1,24 +1,7 @@
-import pytest
-from app import create_app
-from dotenv import load_dotenv
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser
 from tests.mocks.mock_utils import MockUtils
-
-
-@pytest.fixture
-def client() -> FlaskClient:
-    """
-    Configures the application and creates a testing `FlaskClient` from it.
-
-    Returns:
-        A testing `FlaskClient` that can be used in tests through fixtures.
-    """
-    load_dotenv()
-    app = create_app()
-    app.config.update({"TESTING": True})
-    yield app.test_client()
 
 
 def test_login_view(mocker: MockerFixture, client: FlaskClient) -> None:
@@ -180,3 +163,4 @@ def test_verification_view(mocker: MockerFixture, client: FlaskClient) -> None:
 
         # Test that account can be verified
         response = client.post("/account/verify", data={"url": "example.com"})
+        assert b"Success" in response.data

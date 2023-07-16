@@ -15,7 +15,5 @@ class MockUtils:
         and has the `ca-key` metadata tag set to `ca-key-example`.
         """
         return (
-            url == "example.com"
-            and name == "ca-key"
-            and content == "ca-key-exampleuser"
+            url == "example.com" and name == "ca-key" and content == "ca-key-someuser"
         )
