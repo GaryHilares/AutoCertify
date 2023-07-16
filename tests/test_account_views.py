@@ -9,6 +9,12 @@ from tests.mocks.mock_utils import MockUtils
 
 @pytest.fixture
 def client() -> FlaskClient:
+    """
+    Configures the application and creates a testing `FlaskClient` from it.
+
+    Returns:
+        A testing `FlaskClient` that can be used in tests through fixtures.
+    """
     load_dotenv()
     app = create_app()
     app.config.update({"TESTING": True})
