@@ -8,8 +8,6 @@ from flask.blueprints import BlueprintSetupState
 from flask.typing import ResponseReturnValue
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_required
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
 from app.certificate_builder import CertificateBuilder
 from app.models.certificate import Certificate
 

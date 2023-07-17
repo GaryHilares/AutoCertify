@@ -1,3 +1,7 @@
+"""
+Includes tests for the views under /account/ (account.* endpoints) of the Certificate Automation
+Flask app. To collect and run these tests, you should use `pytest`'s test discovery.
+"""
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser

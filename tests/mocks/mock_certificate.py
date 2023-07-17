@@ -3,6 +3,7 @@ Includes a `MockCertificate` class that mocks the `Certificate` class
 """
 from __future__ import annotations
 from types import SimpleNamespace
+from tests.mocks.mock_user import MockUser
 
 
 class MockCertificate:
@@ -28,11 +29,25 @@ class MockCertificate:
         self.title = title
         self.certifier_id = certifier_id
 
+    def get_certifier(self: MockCertificate) -> MockUser:
+        ret = MockUser.get_by_id(self.certifier_id)
+        print(ret)
+        return ret
+
     def save(self: MockCertificate) -> None:
         """
         Mocks the `save` function. Returns mock inserted_id.
         """
         return SimpleNamespace(inserted_id="somecertificate")
+
+    @staticmethod
+    def get_by_id(id_: str) -> MockCertificate:
+        """
+        Mocks the `get_by_id` function, retrieving certificates from the "if-else database".
+        """
+        if id_ == "anid":
+            return MockCertificate(None, "goodperson", "goodtitle", "someid")
+        return None
 
     @staticmethod
     def create(title: str, name: str, certifier_id: str) -> MockCertificate:

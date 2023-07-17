@@ -1,3 +1,7 @@
+"""
+Includes tests for the views under /certificate/ (certificate.* endpoints) of the Certificate
+Automation Flask app. To collect and run these tests, you should use `pytest`'s test discovery.
+"""
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser
@@ -6,7 +10,7 @@ from tests.mocks.mock_certificate import MockCertificate
 
 def test_create_view(mocker: MockerFixture, client: FlaskClient) -> None:
     """
-    Tests the login functionality (located at /account/login).
+    Tests the certificate creation functionality (located at /certificate/create).
 
     Args:
         mocker: A mocking interface provided by `pytest-mock`.
@@ -44,3 +48,33 @@ def test_create_view(mocker: MockerFixture, client: FlaskClient) -> None:
             data={"certificate-name": "goodperson", "certificate-title": "sometitle"},
         )
         assert b"Success" in response.data
+
+
+def test_view_view(mocker: MockerFixture, client: FlaskClient) -> None:
+    """
+    Tests the certificate viewing functionality (located at
+    /certificate/<string:certificate_id>/view).
+
+    Args:
+        mocker: A mocking interface provided by `pytest-mock`.
+        client: A Flask test client provided by a `pytest`'s fixture.
+    Raises:
+        AssertionError: If any of the tests fails.
+    """
+    # Mock required functions from the User class
+    mocker.patch("app.models.user.User.get_by_id", wraps=MockUser.get_by_id)
+    mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
+    mocker.patch(
+        "app.models.certificate.Certificate.create", wraps=MockCertificate.create
+    )
+    mocker.patch(
+        "app.models.certificate.Certificate.get_by_id", wraps=MockCertificate.get_by_id
+    )
+
+    # Test that a view with a non-existent id cannot be seen
+    response = client.get("/certificate/idthatdoesnotexist/view")
+    assert response.status_code == 403
+
+    # Test that appropiate view can be seen without logging in
+    response = client.get("/certificate/anid/view")
+    assert response.status_code == 200
