@@ -30,9 +30,7 @@ class MockCertificate:
         self.certifier_id = certifier_id
 
     def get_certifier(self: MockCertificate) -> MockUser:
-        ret = MockUser.get_by_id(self.certifier_id)
-        print(ret)
-        return ret
+        return MockUser.get_by_id(self.certifier_id)
 
     def save(self: MockCertificate) -> None:
         """

@@ -97,7 +97,7 @@ def view(certificate_id: str) -> ResponseReturnValue:
             render_template(
                 "error.html",
                 critical_error=True,
-                message="Certificate data is corrupt.",
+                message="Certificate data seems to be invalid.",
             ),
             500,
         )

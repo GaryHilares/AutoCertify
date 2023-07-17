@@ -2,6 +2,7 @@
 Includes tests for the views under /certificate/ (certificate.* endpoints) of the Certificate
 Automation Flask app. To collect and run these tests, you should use `pytest`'s test discovery.
 """
+from types import SimpleNamespace
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser
@@ -18,7 +19,7 @@ def test_create_view(mocker: MockerFixture, client: FlaskClient) -> None:
     Raises:
         AssertionError: If any of the tests fails.
     """
-    # Mock required functions from the User class
+    # Mock required functions
     mocker.patch("app.models.user.User.get_by_id", wraps=MockUser.get_by_id)
     mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
     mocker.patch(
@@ -61,12 +62,7 @@ def test_view_view(mocker: MockerFixture, client: FlaskClient) -> None:
     Raises:
         AssertionError: If any of the tests fails.
     """
-    # Mock required functions from the User class
-    mocker.patch("app.models.user.User.get_by_id", wraps=MockUser.get_by_id)
-    mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
-    mocker.patch(
-        "app.models.certificate.Certificate.create", wraps=MockCertificate.create
-    )
+    # Mock required functions
     mocker.patch(
         "app.models.certificate.Certificate.get_by_id", wraps=MockCertificate.get_by_id
     )
@@ -77,4 +73,32 @@ def test_view_view(mocker: MockerFixture, client: FlaskClient) -> None:
 
     # Test that appropiate view can be seen without logging in
     response = client.get("/certificate/anid/view")
+    assert response.status_code == 200
+
+
+def test_download_view(mocker: MockerFixture, client: FlaskClient) -> None:
+    """
+    Tests the certificate downloading functionality (located at
+    /certificate/<string:certificate_id>/download).
+
+    Args:
+        mocker: A mocking interface provided by `pytest-mock`.
+        client: A Flask test client provided by a `pytest`'s fixture.
+    Raises:
+        AssertionError: If any of the tests fails.
+    """
+    # Mock required functions from the User class
+    mocker.patch("app.models.user.User.get_by_id", wraps=MockUser.get_by_id)
+    mocker.patch(
+        "app.models.certificate.Certificate.get_by_id", wraps=MockCertificate.get_by_id
+    )
+
+    # TODO: Mock app.certificate_builder.CertificateBuilder
+
+    # Test that a view with a non-existent id cannot be seen
+    response = client.get("/certificate/idthatdoesnotexist/download")
+    assert response.status_code == 403
+
+    # Test that appropiate view can be seen without logging in
+    response = client.get("/certificate/anid/download")
     assert response.status_code == 200

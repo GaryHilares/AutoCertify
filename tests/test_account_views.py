@@ -18,7 +18,7 @@ def test_login_view(mocker: MockerFixture, client: FlaskClient) -> None:
     Raises:
         AssertionError: If any of the tests fails.
     """
-    # Mock required functions from the User class
+    # Mock required functions
     mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
 
     # Test that log in view is displayed correctly
@@ -60,7 +60,7 @@ def test_register_view(mocker: MockerFixture, client: FlaskClient) -> None:
     Raises:
         AssertionError: If any of the tests fails.
     """
-    # Mock required functions from the User class
+    # Mock required functions
     mocker.patch("app.models.user.User.create", wraps=MockUser.create)
     mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
 
