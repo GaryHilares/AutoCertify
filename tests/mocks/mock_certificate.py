@@ -13,7 +13,7 @@ class MockCertificate:
 
     def __init__(
         self, id_: str, name: str, title: str, certifier_id: str | None
-    ) -> MockCertificate:
+    ) -> None:
         """
         Data to use for the mock.
 

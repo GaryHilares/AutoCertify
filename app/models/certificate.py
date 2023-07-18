@@ -18,7 +18,7 @@ class Certificate:
 
     def __init__(
         self: Certificate, id_: str | None, name: str, title: str, certifier_id: str
-    ) -> Certificate:
+    ) -> None:
         """
         Initializes a new `Certificate` using the arguments provided. This method is mainly used
         internally to easily create instances in other methods. To create a new certificate in your

@@ -29,7 +29,7 @@ class CertificateBuilder:
         "certifier": {"left": 377, "bottom": 115},
     }
 
-    def __init__(self: CertificateBuilder, settings: dict) -> CertificateBuilder:
+    def __init__(self: CertificateBuilder, settings: dict) -> None:
         """
         Creates a new CertificateBuilder with the provided settings.
 

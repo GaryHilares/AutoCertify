@@ -18,7 +18,7 @@ class User(UserMixin):
 
     def __init__(
         self, id_: str | None, name: str, password: str, url: str | None
-    ) -> User:
+    ) -> None:
         """
         Initializes a new `User` using the arguments provided. This method is mainly used internally
         to easily create instances in other methods. To create a new user in your code you may find

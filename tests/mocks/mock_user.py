@@ -10,7 +10,7 @@ class MockUser(UserMixin):
     Mocks the `User` class.
     """
 
-    def __init__(self, id_: str, name: str, password: str, url: str | None) -> MockUser:
+    def __init__(self, id_: str, name: str, password: str, url: str | None) -> None:
         """
         Data to use for the mock.
 
