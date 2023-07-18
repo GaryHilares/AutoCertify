@@ -7,6 +7,7 @@ from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser
 from tests.mocks.mock_certificate import MockCertificate
+from tests.mocks.mock_certificate_builder import MockCertificateBuilder
 
 
 def test_create_view(mocker: MockerFixture, client: FlaskClient) -> None:
@@ -92,8 +93,7 @@ def test_download_view(mocker: MockerFixture, client: FlaskClient) -> None:
     mocker.patch(
         "app.models.certificate.Certificate.get_by_id", wraps=MockCertificate.get_by_id
     )
-
-    # TODO: Mock app.certificate_builder.CertificateBuilder
+    mocker.patch("app.views.certificate.CertificateBuilder", MockCertificateBuilder)
 
     # Test that a view with a non-existent id cannot be seen
     response = client.get("/certificate/idthatdoesnotexist/download")

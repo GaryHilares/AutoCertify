@@ -74,7 +74,7 @@ class CertificateBuilder:
         return self
 
     def add_certificate_data(
-        self: CertificateBuilder, certificate_data: dict, certifier_data: dict
+        self: CertificateBuilder, certificate_data: object, certifier_data: object
     ) -> CertificateBuilder:
         """
         Adds the certificate and certifier infomration to the certificate.
