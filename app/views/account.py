@@ -157,3 +157,21 @@ def verify() -> ResponseReturnValue:
         "success.html",
         message=f"Account {name} verified correctly with the website {url}",
     )
+
+
+@account_blueprint.route("/settings", methods=["GET"])
+@login_required
+def settings() -> ResponseReturnValue:
+    """
+    Returns a view of user settings.
+    """
+    # Return settings menu
+    return render_template(
+        "settings-account.html",
+        user={
+            "id_": current_user.id_,
+            "name": current_user.name,
+            "verified": current_user.url and current_user.url != "None",
+            "url": current_user.url,
+        },
+    )
