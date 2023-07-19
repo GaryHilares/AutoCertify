@@ -168,3 +168,37 @@ def test_verification_view(mocker: MockerFixture, client: FlaskClient) -> None:
         # Test that account can be verified
         response = client.post("/account/verify", data={"url": "example.com"})
         assert b"Success" in response.data
+
+
+def test_settings_view(mocker: MockerFixture, client: FlaskClient) -> None:
+    """
+    Tests the settings functionality (/account/settings).
+
+    Args:
+        mocker: A mocking interface provided by `pytest-mock`.
+        client: A Flask test client provided by a `pytest`'s fixture.
+    Raises:
+        AssertionError: If any of the tests fails.
+    """
+    # Mock required functions
+    mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
+
+    # Check that endpoint cannot be accessed without getting logged in
+    response = client.get("/account/settings")
+    assert response.status_code == 302
+
+    with client.application.test_request_context():
+        # Log in into "someuser", who has set "example.com" appropiately for verification
+        response = client.post(
+            "/account/login", data={"name": "someuser", "password": "1234"}
+        )
+
+        # Check that endpoint can be accessed after getting logged in
+        response = client.get("/account/settings")
+        assert response.status_code == 200
+
+        # Check that the username is displayed in the settings view
+        assert b"someuser" in response.data
+
+        # Check that the password is not displayed in the settings view
+        assert b"1234" not in response.data
