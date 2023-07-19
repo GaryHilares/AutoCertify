@@ -20,7 +20,6 @@ def create_app() -> Flask:
     # Initialize app and config
     app = Flask(__name__)
     app.config.from_object("config")
-    app.secret_key = "somethinguniqueandsecret"
     app.register_blueprint(certificate_blueprint)
     app.register_blueprint(account_blueprint)
 
