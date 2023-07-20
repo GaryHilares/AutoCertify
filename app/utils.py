@@ -56,6 +56,6 @@ class Utils:
 
         # Recursive case: Both dict1 or dict2 are dict, so check elements recursively
         return len(dict1) == len(dict2) and not any(
-            key not in dict2 or not same_structure(dict1[key], dict2[key])
+            key not in dict2 or not Utils.same_structure(dict1[key], dict2[key])
             for key in dict1
         )
