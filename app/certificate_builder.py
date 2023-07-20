@@ -24,9 +24,9 @@ class CertificateBuilder:
         "template": "./app/static/template.png",
         "font": {"name": "Poppins Bold", "size": 32},
         "qrcode": {"left": 600, "bottom": 100, "width": 125, "height": 125},
-        "name": {"left": 390, "bottom": 310},
+        "name": {"left": 390, "bottom": 320},
         "title": {"left": 322, "bottom": 245},
-        "certifier": {"left": 377, "bottom": 115},
+        "certifier": {"left": 377, "bottom": 100},
     }
 
     def __init__(self: CertificateBuilder, settings: dict) -> None:
