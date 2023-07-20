@@ -23,10 +23,10 @@ class CertificateBuilder:
     default_settings = {
         "template": "./app/static/template.png",
         "font": {"name": "Poppins Bold", "size": 32},
-        "qrcode": {"left": 600, "bottom": 100, "width": 125, "height": 125},
-        "name": {"left": 390, "bottom": 320},
-        "title": {"left": 322, "bottom": 245},
-        "certifier": {"left": 377, "bottom": 100},
+        "qrcode": {"left": 650, "bottom": 68, "width": 125, "height": 125},
+        "name": {"left": 420, "bottom": 320},
+        "title": {"left": 420, "bottom": 245},
+        "certifier": {"left": 420, "bottom": 100},
     }
 
     def __init__(self: CertificateBuilder, settings: dict) -> None:
@@ -104,13 +104,13 @@ class CertificateBuilder:
         self.pdf_drawer.setFont("Certificate Font", font_settings["size"])
 
         # Add text
-        self.pdf_drawer.drawString(
+        self.pdf_drawer.drawCentredString(
             name_settings["left"], name_settings["bottom"], name_settings["text"]
         )
-        self.pdf_drawer.drawString(
+        self.pdf_drawer.drawCentredString(
             title_settings["left"], title_settings["bottom"], title_settings["text"]
         )
-        self.pdf_drawer.drawString(
+        self.pdf_drawer.drawCentredString(
             certifier_settings["left"],
             certifier_settings["bottom"],
             certifier_settings["text"],
