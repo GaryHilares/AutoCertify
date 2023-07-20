@@ -22,4 +22,4 @@ Tell them where to go, how often they can expect to get an update on a
 reported vulnerability, what to expect if the vulnerability is accepted or
 declined, etc.
 -->
-If you find a vulnerability, please do not open an issue in GitHub to report it. Instead, email dev.garyhilares@gmail.com with the vulnerability details.
+If you find a vulnerability, please do not open an issue to report it. Instead, create a security advisory in the "Security" tab of the GitHub UI or email dev.garyhilares@gmail.com with the vulnerability details.
