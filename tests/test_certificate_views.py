@@ -102,3 +102,6 @@ def test_download_view(mocker: MockerFixture, client: FlaskClient) -> None:
     # Test that appropiate view can be seen without logging in
     response = client.get("/certificate/anid/download")
     assert response.status_code == 200
+
+
+# TODO: Add tests for managing functionality (located at /certificate/manage)

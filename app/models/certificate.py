@@ -128,3 +128,37 @@ class Certificate:
             certificate["title"],
             str(certificate["certifier_id"]),
         )
+
+    @staticmethod
+    def get_all_by_certifier_id(certifier_id: str) -> Certificate:
+        """
+        Retrieves the certificate with the given id from the database and returns it.
+
+        Args:
+            id_: The id of the object to search.
+        Returns:
+            The certificate with the given id, if one was found. None otherwise.
+        """
+        # Check that id format is valid
+        try:
+            object_id = ObjectId(certifier_id)
+        except InvalidId:
+            return None
+
+        # Get database
+        db = Database.get()
+
+        # Retrieve objects
+        certificates = [
+            Certificate(
+                str(certificate["_id"]),
+                certificate["name"],
+                certificate["title"],
+                str(certificate["certifier_id"]),
+            )
+            for certificate in db["certificate-list"]
+            .find({"certifier_id": object_id})
+            .limit(20)
+        ]
+
+        return certificates

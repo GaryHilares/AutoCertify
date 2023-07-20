@@ -171,3 +171,16 @@ def download(certificate_id: str) -> ResponseReturnValue:
         as_attachment=True,
         download_name="Certificate.pdf",
     )
+
+
+@certificate_blueprint.route("/manage", methods=["GET"])
+@login_required
+def manage() -> ResponseReturnValue:
+    """
+    Provides functionality for looking at user-issued certificates and deleting them.
+    """
+    # Fetch certificates issued by this user
+    certificates = Certificate.get_all_by_certifier_id(current_user.id_)
+
+    # Render view
+    return render_template("manage-certificate.html", certificates=certificates)
