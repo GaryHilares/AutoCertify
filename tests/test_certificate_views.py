@@ -2,7 +2,6 @@
 Includes tests for the views under /certificate/ (certificate.* endpoints) of the Certificate
 Automation Flask app. To collect and run these tests, you should use `pytest`'s test discovery.
 """
-from types import SimpleNamespace
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from tests.mocks.mock_user import MockUser
@@ -104,4 +103,40 @@ def test_download_view(mocker: MockerFixture, client: FlaskClient) -> None:
     assert response.status_code == 200
 
 
-# TODO: Add tests for managing functionality (located at /certificate/manage)
+def test_manage_view(mocker: MockerFixture, client: FlaskClient) -> None:
+    """
+    Tests the certificate managing functionality (located at
+    /certificate/manage).
+
+    Args:
+        mocker: A mocking interface provided by `pytest-mock`.
+        client: A Flask test client provided by a `pytest`'s fixture.
+    Raises:
+        AssertionError: If any of the tests fails.
+    """
+    # Mock required functions
+    mocker.patch("app.models.user.User.get_by_id", wraps=MockUser.get_by_id)
+    mocker.patch(
+        "app.models.certificate.Certificate.get_all_by_certifier_id",
+        wraps=MockCertificate.get_all_by_certifier_id,
+    )
+    mocker.patch("app.models.user.User.get_by_name", wraps=MockUser.get_by_name)
+
+    # Test that view cannot be seen without being logged in
+    response = client.get("/certificate/manage")
+    assert response.status_code == 302
+
+    # Keep user loged in
+    with client.application.test_request_context():
+        # Log in as "someuser"
+        response = client.post(
+            "/account/login", data={"name": "someuser", "password": "1234"}
+        )
+        assert b"Success" in response.data
+
+        # Test that view can be seen after getting logged in
+        response = client.get("/certificate/manage")
+        assert response.status_code == 200
+
+        # Test that created certificates are appropiately listed
+        assert b"goodperson" in response.data

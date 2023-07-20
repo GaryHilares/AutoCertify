@@ -12,7 +12,11 @@ class MockCertificate:
     """
 
     def __init__(
-        self, id_: str, name: str, title: str, certifier_id: str | None
+        self: MockCertificate,
+        id_: str | None,
+        name: str,
+        title: str,
+        certifier_id: str | None,
     ) -> None:
         """
         Data to use for the mock.
@@ -44,8 +48,14 @@ class MockCertificate:
         Mocks the `get_by_id` function, retrieving certificates from the "if-else database".
         """
         if id_ == "anid":
-            return MockCertificate(None, "goodperson", "goodtitle", "someid")
+            return MockCertificate("anid", "goodperson", "goodtitle", "someid")
         return None
+
+    @staticmethod
+    def get_all_by_certifier_id(certifier_id: str):
+        if certifier_id == "someid":
+            return [MockCertificate("anid", "goodperson", "goodtitle", "someid")]
+        return []
 
     @staticmethod
     def create(title: str, name: str, certifier_id: str) -> MockCertificate:

@@ -177,7 +177,7 @@ def download(certificate_id: str) -> ResponseReturnValue:
 @login_required
 def manage() -> ResponseReturnValue:
     """
-    Provides functionality for looking at user-issued certificates and deleting them.
+    Provides functionality for looking at user-issued certificates and managing them.
     """
     # Fetch certificates issued by this user
     certificates = Certificate.get_all_by_certifier_id(current_user.id_)
